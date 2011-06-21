@@ -1,0 +1,4 @@
+* Add SSL option handling
+* Create INSTALL and API docs, and /examples
+* Create unit tests using libcheck
+* Document C API
