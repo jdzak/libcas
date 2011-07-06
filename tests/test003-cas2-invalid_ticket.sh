@@ -16,5 +16,5 @@ Content-Type: text/plain
 " | nc -l 8080  1>/dev/null ) &
 
 
-./src/cascli cas2 http://localhost:8080 http://localhost 12345
+../src/cascli cas2 http://localhost:8080 http://localhost 12345
 if [ $? -eq 3 ]; then /bin/true; else /bin/false;fi

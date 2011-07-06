@@ -14,7 +14,11 @@ main( int argc, char** argv ) {
 	//-- Init libcas, obtain new CAS handle
 	cas_init();
 	CAS* cas=cas_new();
-
+	if(argc==6){
+		cas_set_ssl_ca(cas,argv[5]);
+		cas_set_ssl_validate_server(cas,1);
+	}
+	
 	//-- Call appropriate validation function for supplied protocol
 	if( strcmp( "cas1",argv[1] )==0 ) {
 		code=cas_cas1_validate( cas,argv[2],argv[3],argv[4],0 );

@@ -18,18 +18,17 @@ Content-Type: text/plain
     </cas:authenticationSuccess>
 </cas:serviceResponse>
 
-" > ${tmpfile}
+" > "${tmpfile}?service=localhost&ticket=12345"
 
 openssl req -new -keyout ${tmpfile}.key  -nodes -subj "/C=ZZ/ST=STATE/L=LOCALE/O=ORGANIZATION/CN=localhost" | openssl x509 -req -days 1 -signkey ${tmpfile}.key -out ${tmpfile}.crt
-
+c_rehash $PWD
 openssl s_server -accept 8443 -cert ${tmpfile}.crt -key ${tmpfile}.key -HTTP &
 pid=$!
+p=`../src/cascli cas2 https://localhost:8443/${tmpfile} localhost 12345 ./`
 
-p=`./src/cascli cas2 https://localhost:8443/${tmpfile} http://localhost 12345`
+kill $pid
 
-kill $! 1>/dev/null 2>/dev/null
+rm 4fb486cd.0 ${tmpfile} "${tmpfile}?service=localhost&ticket=12345" ${tmpfile}.key ${tmpfile}.crt
 
-rm ${tmpfile} ${tmpfile}.key ${tmpfile}.crt
-
-if [ "$p" = "myprinc" ]; then /bin/true; else /bin/false;fi
+if [ "$p" = "myprinc" ]; then /bin/true; else echo $p; /bin/false;fi
 

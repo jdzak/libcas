@@ -1,5 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
 
 #include <curl/curl.h>
 #include <libxml/parser.h>
@@ -34,25 +38,23 @@ cas_destroy() {
  */
 CAS*
 cas_new() {
-	CAS* cas = calloc( 1,sizeof( CAS ) );
+	CAS* cas = NULL;
 
-	cas->curl = curl_easy_init();
-	curl_easy_setopt(cas->curl,CURLOPT_USERAGENT, PACKAGE_STRING );
-	curl_easy_setopt(cas->curl, CURLOPT_HEADER, 0L); 
-	curl_easy_setopt(cas->curl, CURLOPT_NOPROGRESS, 1L);
-	curl_easy_setopt(cas->curl, CURLOPT_NOSIGNAL, 1L);
-	curl_easy_setopt(cas->curl, CURLOPT_FOLLOWLOCATION, 1L);
-	curl_easy_setopt(cas->curl, CURLOPT_MAXREDIRS, 5L);
-	curl_easy_setopt(cas->curl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
-
-#ifndef LIBCURL_NO_CURLPROTO
-	curl_easy_setopt(cas->curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
-#endif
-	
+	if(cas = calloc( 1,sizeof( CAS ) )){
+		cas->curl = curl_easy_init();
+		curl_easy_setopt(cas->curl,CURLOPT_USERAGENT, PACKAGE_STRING );
+		curl_easy_setopt(cas->curl, CURLOPT_HEADER, 0L); 
+		curl_easy_setopt(cas->curl, CURLOPT_NOPROGRESS, 1L);
+		curl_easy_setopt(cas->curl, CURLOPT_NOSIGNAL, 1L);
+		curl_easy_setopt(cas->curl, CURLOPT_FOLLOWLOCATION, 1L);
+		curl_easy_setopt(cas->curl, CURLOPT_MAXREDIRS, 5L);
+		curl_easy_setopt(cas->curl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
+		curl_easy_setopt(cas->curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS|CURLPROTO_FILE);
+		
 #ifdef DEBUG
-	curl_easy_setopt(cas->curl, CURLOPT_VERBOSE, 1L);
+		curl_easy_setopt(cas->curl, CURLOPT_VERBOSE, 1L);
 #else
-	curl_easy_setopt(cas->curl, CURLOPT_VERBOSE, 0L);
+		curl_easy_setopt(cas->curl, CURLOPT_VERBOSE, 0L);
 #endif
 
 		
@@ -60,19 +62,26 @@ cas_new() {
 	////curl_easy_setopt(cas->curl, CURLOPT_SSL_CTX_FUNCTION, cas_curl_ssl_ctx);
 	////curl_easy_setopt(cas->curl, CURLOPT_SSL_CTX_DATA, c);
 
-	//TODO: Validate the server?
-	////curl_easy_setopt(cas->curl, CURLOPT_SSL_VERIFYPEER, (c->CASValidateServer != FALSE ? 1L : 0L));
-
-	//TODO: Certificate Paths
-	////if(f.filetype == APR_DIR)
-		//curl_easy_setopt(cas->curl, CURLOPT_CAINFO, "/home/matt/Dropbox/Projects/test/test.crt");
-	////else if (f.filetype == APR_REG)
-		////curl_easy_setopt(cas->curl, CURLOPT_CAINFO, c->CASCertificatePath);
-	////curl_easy_setopt(cas->curl, CURLOPT_SSL_VERIFYHOST, (c->CASValidateServer != FALSE ? 2L : 0L));
-
-
+	}
 
 	return( cas );
+}
+
+void
+cas_set_ssl_ca( CAS* cas, const char* capath ){
+	struct stat buf;
+	stat(capath, &buf);
+	if(S_ISDIR(buf.st_mode)){
+		curl_easy_setopt(cas->curl, CURLOPT_CAPATH, capath);
+	}else if(S_ISREG(buf.st_mode)){
+		curl_easy_setopt(cas->curl, CURLOPT_CAINFO, capath);
+	}
+}
+
+void
+cas_set_ssl_validate_server( CAS* cas, int verify){
+	curl_easy_setopt(cas->curl, CURLOPT_SSL_VERIFYPEER, (verify ? 1 : 0));
+	curl_easy_setopt(cas->curl, CURLOPT_SSL_VERIFYHOST, (verify ? 2 : 0));
 }
 
 /*******************************************************************************
@@ -80,9 +89,18 @@ cas_new() {
  */
 void
 cas_zap( CAS* cas ) {
-	if( cas->curl ) curl_easy_cleanup( cas->curl );
-	if( cas->response.principal ) free( cas->response.principal );
-	if( cas ) free( cas );
+	if(cas){
+		if( cas->curl ) curl_easy_cleanup( cas->curl );
+		if( cas->principal ) free( cas->principal );
+		
+		cas->curl=NULL;
+		cas->principal=NULL;
+		cas->message=NULL;
+		
+		free( cas );
+		
+		cas=NULL;
+	}
 }
 
 /*******************************************************************************
@@ -90,7 +108,7 @@ cas_zap( CAS* cas ) {
  */
 char*
 cas_get_principal( CAS* cas ) {
-	return( cas->response.principal );
+	return( cas->principal );
 }
 
 /*******************************************************************************

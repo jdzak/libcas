@@ -4,7 +4,7 @@
 typedef struct CAS CAS;
 
 typedef enum {
-	CAS_FAIL=-1,                 // - Utter Failure, reason unknown
+	CAS_FAIL=-1,              // - Utter Failure, reason unknown
 	CAS_VALIDATION_SUCCESS=0, // - Successful validation, principal (and more?) retrieved
 	CAS1_VALIDATION_NO,       // - CAS1 validation was successfully performed, but returned no principal
 	CAS2_INVALID_REQUEST,     // - CAS2 not all of the required request parameters were present
@@ -14,6 +14,7 @@ typedef enum {
 	CAS_INVALID_RESPONSE,	  // - CAS Server responded with something unparseable
 	CAS_CURL_FAILURE,
 	CAS2_INVALID_XML,
+	CAS_ENOMEM,
 	
 } CAS_CODE;
 

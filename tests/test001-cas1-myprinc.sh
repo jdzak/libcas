@@ -11,6 +11,6 @@ yes
 myprinc
 
 " | /bin/nc -l 8081 1>/dev/null ) &
-p=`./src/cascli cas1 http://localhost:8081 http://localhost 12345`
+p=`../src/cascli cas1 http://localhost:8081 http://localhost 12345`
 echo $p
 [ "$p" = "myprinc" ]

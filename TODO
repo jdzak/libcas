@@ -1,4 +1,5 @@
-* Add SSL option handling
-* Create INSTALL and API docs, and /examples
-* Create unit tests using libcheck
+* Fix main.c to handle proper switches (for CA, etc)
+* Add SSL locking hooks
 * Document C API
+? Create INSTALL and API docs, and /examples
+? Create unit tests using libcheck

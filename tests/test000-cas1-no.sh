@@ -11,5 +11,5 @@ no
 " | nc -l 8080  1>/dev/null ) &
 
 
-./src/cascli cas1 http://localhost:8080 http://localhost 12345
+../src/cascli cas1 http://localhost:8080 http://localhost 12345
 if [ $? -eq 1 ]; then /bin/true; else /bin/false;fi

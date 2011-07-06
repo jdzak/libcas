@@ -55,6 +55,25 @@
 #include "cas.h"
 #include "cas-int.h"
 
+typedef struct {
+	CAS* cas;
+	enum {
+		XML_FAIL=-1,
+		XML_NEED_START_DOC=0,
+		XML_NEED_OPEN_SERVICERESPONSE,
+		XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE,
+		XML_NEED_OPEN_USER,
+		XML_READ_USER,
+		XML_NEED_CLOSE_USER,
+		XML_NEED_CLOSE_AUTHENTICATIONSUCCESS,
+		XML_READ_FAILUREMESSAGE,
+		XML_NEED_CLOSE_SERVICERESPONSE,
+		XML_NEED_END_DOC,
+		XML_COMPLETE,
+	} xml_state;
+} CAS_XML_STATE;
+
+
 /*******************************************************************************
  * cas2_curl_callback: cURL callback accepting received data
  */
@@ -115,21 +134,21 @@ cas_cas2_start_cas_authenticationFailure( CAS_XML_STATE* ctx, const xmlChar* loc
 		int valuesz=attributes[4]-attributes[3];
 		if(nb_attributes==1 && strncasecmp("code",attributes[0],4)==0){
 			if(valuesz==15 && strncasecmp(attributes[3],"INVALID_REQUEST",valuesz)==0){
-				ctx->cas->response.code=CAS2_INVALID_REQUEST;
+				ctx->cas->code=CAS2_INVALID_REQUEST;
 				ctx->xml_state=XML_READ_FAILUREMESSAGE;
 			}else if(valuesz==14 && strncasecmp(attributes[3],"INVALID_TICKET",valuesz)==0){
-				ctx->cas->response.code=CAS2_INVALID_TICKET;
+				ctx->cas->code=CAS2_INVALID_TICKET;
 				ctx->xml_state=XML_READ_FAILUREMESSAGE;
 			}else if(valuesz==15 && strncasecmp("INVALID_SERVICE",attributes[3],valuesz)==0){
-				ctx->cas->response.code=CAS2_INVALID_SERVICE;
+				ctx->cas->code=CAS2_INVALID_SERVICE;
 				ctx->xml_state=XML_READ_FAILUREMESSAGE;
 			}else if(valuesz==14 && strncasecmp("INTERNAL_ERROR",attributes[3],valuesz)==0){
-				ctx->cas->response.code=CAS2_INTERNAL_ERROR;
+				ctx->cas->code=CAS2_INTERNAL_ERROR;
 				ctx->xml_state=XML_READ_FAILUREMESSAGE;
 			}else{
 				ctx->xml_state=XML_FAIL;
 			}
-			debug("CODE=%d",ctx->cas->response.code);
+			debug("CODE=%d",ctx->cas->code);
 		}else{
 			ctx->xml_state=XML_FAIL;
 		}
@@ -250,25 +269,38 @@ cas_cas2_characters( CAS_XML_STATE* ctx, const xmlChar* ch, int len ) {
 	int i;
 	switch( ctx->xml_state ) {
 	case XML_READ_USER:
-		if( !ctx->cas->response.principal ) {
-			ctx->cas->response.principal=calloc( len+1,sizeof( char ) );
-			strncpy( ctx->cas->response.principal,ch,len );
-			ctx->cas->response.principal[len]='\0';
+		if( !ctx->cas->principal ) {
+			ctx->cas->principal=calloc( len+1,sizeof( char ) );
+			if(ctx->cas->principal==NULL) return;
+			strncpy( ctx->cas->principal,ch,len );
+			ctx->cas->principal[len]='\0';
 		} else {
-			ctx->cas->response.principal=realloc( ctx->cas->response.principal,strlen( ctx->cas->response.principal )+len+1 );
-			strncat( ctx->cas->response.principal,ch,len );
+			void* tmp=ctx->cas->principal;
+			ctx->cas->principal=realloc( ctx->cas->principal,strlen( ctx->cas->principal )+len+1 );
+			if(ctx->cas->principal==NULL){
+				free(tmp);
+				return;
+			}
+			strncat( ctx->cas->principal,ch,len );
 		}
 	break;
 	case XML_READ_FAILUREMESSAGE:
-		if( !ctx->cas->response.message ) {
-			ctx->cas->response.message=calloc( len+1,sizeof( char ) );
-			strncpy( ctx->cas->response.message,ch,len );
-			ctx->cas->response.message[len]='\0';
+		if( !ctx->cas->message ) {
+			ctx->cas->message=calloc( len+1,sizeof( char ) );
+			if(ctx->cas->message==NULL) return;
+			strncpy( ctx->cas->message,ch,len );
+			ctx->cas->message[len]='\0';
 		} else {
-			ctx->cas->response.message=realloc( ctx->cas->response.message,strlen( ctx->cas->response.message )+len+1 );
-			strncat( ctx->cas->response.message,ch,len );
+			
+			void* tmp=ctx->cas->message;
+			ctx->cas->message=realloc( ctx->cas->message,strlen( ctx->cas->message )+len+1 );
+			if(ctx->cas->message==NULL){
+				free(tmp);
+				return;
+			}
+			strncat( ctx->cas->message,ch,len );
 		}	
-		debug("MESSAGE=%s",ctx->cas->response.message);
+		debug("MESSAGE=%s",ctx->cas->message);
 	break;
 	default: //If unexpected characters are not whitespace, XML_FAIL
 		for( i=0; i<len; i++ ) {
@@ -293,8 +325,10 @@ cas_cas2_endDocument( CAS_XML_STATE* ctx ) {
  */
 CAS_CODE
 cas_cas2_servicevalidate( CAS* cas, char* cas1_validate_url, char* escaped_service, char* ticket, int renew ) {
-
+	if(cas->principal) { free(cas->principal);cas->principal=NULL;}
+	
 	xmlSAXHandlerPtr sax=calloc( 1,sizeof( xmlSAXHandler ) );
+	if(sax==NULL) return(CAS_ENOMEM);
 	sax->initialized=XML_SAX2_MAGIC;
 
 	sax->startElementNs=( startElementNsSAX2Func )cas_cas2_startElementNs;
@@ -310,36 +344,44 @@ cas_cas2_servicevalidate( CAS* cas, char* cas1_validate_url, char* escaped_servi
 	//Build URL for validation
 		//18=strlen("?service=")+strlen("&ticket=")+1
 		//11=strlen("&renew=true")
-	char* url=calloc( strlen( cas1_validate_url )+strlen( escaped_service )+strlen( ticket )+( renew?29:18 ),sizeof( char ) );
-	strcpy( url,cas1_validate_url );
-	strcat( url,"?service=" );
-	strcat( url,escaped_service );
-	strcat( url,"&ticket=" );
-	strcat( url,ticket );
+	
+	char* url;
+	if(url=calloc( strlen( cas1_validate_url )+strlen( escaped_service )+strlen( ticket )+( renew?29:18 ),sizeof( char ) )){
+		strcpy( url,cas1_validate_url );
+		strcat( url,"?service=" );
+		strcat( url,escaped_service );
+		strcat( url,"&ticket=" );
+		strcat( url,ticket );
 
-	//Setup curl connection
-	curl_easy_setopt( cas->curl,CURLOPT_URL, url );
+		//Setup curl connection
+		curl_easy_setopt( cas->curl,CURLOPT_URL, url );
 
-	//Set response handler
-	curl_easy_setopt( cas->curl,CURLOPT_WRITEFUNCTION, ( curl_write_callback )cas_cas2_curl_callback );
+		//Set response handler
+		curl_easy_setopt( cas->curl,CURLOPT_WRITEFUNCTION, ( curl_write_callback )cas_cas2_curl_callback );
 
-	//Pass state to response handler
-	curl_easy_setopt( cas->curl,CURLOPT_WRITEDATA, ctx );
+		//Pass state to response handler
+		curl_easy_setopt( cas->curl,CURLOPT_WRITEDATA, ctx );
+		int curl_status=curl_easy_perform( cas->curl );
 
-	int curl_status=curl_easy_perform( cas->curl );
-
-	int xmlParseError = xmlParseChunk( ctx,NULL,0,1 );
-
-	if(curl_status==0){
-		if( state.xml_state==XML_COMPLETE ) {
-			return( cas->response.code );
-		}else if(xmlParseError){
-			return(CAS2_INVALID_XML);
-		}else{
-			return(CAS_INVALID_RESPONSE);
+		int xmlParseError = xmlParseChunk( ctx,NULL,0,1 );
+		
+		free(sax);
+		free(url);
+		xmlFreeParserCtxt(ctx);
+		if(curl_status==0){
+			if( state.xml_state==XML_COMPLETE ) {
+				return( cas->code );
+			}else if(xmlParseError){
+				return(CAS2_INVALID_XML);
+			}else{
+				return(CAS_INVALID_RESPONSE);
+			}
+		} else {
+			if(cas->message) { free(cas->message);}
+			cas->message=strdup(curl_easy_strerror(curl_status));
+			return(CAS_CURL_FAILURE);
 		}
-	} else {
-		cas->response.message=strdup(curl_easy_strerror(curl_status));
-		return(CAS_CURL_FAILURE);
+	}else{ //ENOMEM for url calloc
+		return(CAS_ENOMEM);
 	}
 }

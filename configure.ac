@@ -10,6 +10,7 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
+	tests/Makefile
 ])
 
 AC_CONFIG_SRCDIR([src/cas.c])
@@ -21,6 +22,9 @@ LT_INIT
 # Checks for libraries.
 LIBCURL_CHECK_CONFIG([yes],7.21.0,[],[AC_MSG_ERROR([libcurl not found])])
 AM_PATH_XML2(2.7.8,,[AC_MSG_ERROR([libxml2 not found])])
+
+PKG_CHECK_MODULES([CHECK], [check >= 0.9.4],,[AC_MSG_WARN([libcheck not found -- check unit tests will not be run])])
+
 # Checks for header files.
 
 # Checks for typedefs, structures, and compiler characteristics.

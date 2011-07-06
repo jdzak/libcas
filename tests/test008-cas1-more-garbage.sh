@@ -11,5 +11,5 @@ GARBAGE
 
 " | nc -l 8082  1>/dev/null ) &
 
-./src/cascli cas1 http://localhost:8082 http://localhost 12345
+../src/cascli cas1 http://localhost:8082 http://localhost 12345
 if [ $? -eq 6 ]; then /bin/true; else /bin/false;fi

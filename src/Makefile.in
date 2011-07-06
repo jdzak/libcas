@@ -36,7 +36,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = cascli$(EXEEXT)
+bin_PROGRAMS = cascli$(EXEEXT) loop$(EXEEXT)
 subdir = src
 DIST_COMMON = $(include_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -45,7 +45,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/libcurl.m4 \
 	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/libxml2.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -85,6 +85,9 @@ PROGRAMS = $(bin_PROGRAMS)
 am_cascli_OBJECTS = main.$(OBJEXT)
 cascli_OBJECTS = $(am_cascli_OBJECTS)
 cascli_DEPENDENCIES = libcas.la
+loop_SOURCES = loop.c
+loop_OBJECTS = loop.$(OBJEXT)
+loop_DEPENDENCIES = libcas.la
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -98,8 +101,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libcas_la_SOURCES) $(cascli_SOURCES)
-DIST_SOURCES = $(libcas_la_SOURCES) $(cascli_SOURCES)
+SOURCES = $(libcas_la_SOURCES) $(cascli_SOURCES) loop.c
+DIST_SOURCES = $(libcas_la_SOURCES) $(cascli_SOURCES) loop.c
 HEADERS = $(include_HEADERS)
 ETAGS = etags
 CTAGS = ctags
@@ -114,6 +117,8 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECK_CFLAGS = @CHECK_CFLAGS@
+CHECK_LIBS = @CHECK_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -160,6 +165,9 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -223,13 +231,18 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4 --install
+
+#Public header
+include_HEADERS = cas.h
+#The primary library, libcas
 lib_LTLIBRARIES = libcas.la
 libcas_la_SOURCES = cas.c cas.h cas-int.h cas1.c cas2.c
-include_HEADERS = cas.h
-cascli_SOURCES = main.c
 libcas_la_CPPFLAGS = ${XML_CPPFLAGS} ${LIBCURL_CPPFLAGS}
 libcas_la_LIBADD = ${XML_LIBS} ${LIBCURL}
+cascli_SOURCES = main.c
 cascli_LDADD = libcas.la
+loop_sources = loop.c
+loop_LDADD = libcas.la
 all: all-am
 
 .SUFFIXES:
@@ -343,6 +356,9 @@ clean-binPROGRAMS:
 cascli$(EXEEXT): $(cascli_OBJECTS) $(cascli_DEPENDENCIES) 
 	@rm -f cascli$(EXEEXT)
 	$(LINK) $(cascli_OBJECTS) $(cascli_LDADD) $(LIBS)
+loop$(EXEEXT): $(loop_OBJECTS) $(loop_DEPENDENCIES) 
+	@rm -f loop$(EXEEXT)
+	$(LINK) $(loop_OBJECTS) $(loop_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -353,6 +369,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcas_la-cas.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcas_la-cas1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcas_la-cas2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/loop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 
 .c.o:

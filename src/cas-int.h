@@ -19,39 +19,17 @@
 struct CAS {
 	CURL* curl;
 
-	struct {
-		CAS_CODE code;
-		union{
-			char* principal;
-			char* message;
-		};
-		//hashmap? attributes;
-	} response;
+
+	CAS_CODE code;
+	union{
+		char* principal;
+		char* message;
+	};
+	//hashmap? attributes;
+
 
 };
 
-typedef struct {
-	size_t size;
-	char* contents;
-} CAS_BUFFER;
-
-typedef struct {
-	CAS* cas;
-	enum {
-		XML_FAIL=-1,
-		XML_NEED_START_DOC=0,
-		XML_NEED_OPEN_SERVICERESPONSE,
-		XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE,
-		XML_NEED_OPEN_USER,
-		XML_READ_USER,
-		XML_NEED_CLOSE_USER,
-		XML_NEED_CLOSE_AUTHENTICATIONSUCCESS,
-		XML_READ_FAILUREMESSAGE,
-		XML_NEED_CLOSE_SERVICERESPONSE,
-		XML_NEED_END_DOC,
-		XML_COMPLETE,
-	} xml_state;
-} CAS_XML_STATE;
 
 
 
