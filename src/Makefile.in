@@ -36,7 +36,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = cascli$(EXEEXT) loop$(EXEEXT)
+bin_PROGRAMS = cascli$(EXEEXT)
 subdir = src
 DIST_COMMON = $(include_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
@@ -85,9 +85,6 @@ PROGRAMS = $(bin_PROGRAMS)
 am_cascli_OBJECTS = main.$(OBJEXT)
 cascli_OBJECTS = $(am_cascli_OBJECTS)
 cascli_DEPENDENCIES = libcas.la
-loop_SOURCES = loop.c
-loop_OBJECTS = loop.$(OBJEXT)
-loop_DEPENDENCIES = libcas.la
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -101,8 +98,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libcas_la_SOURCES) $(cascli_SOURCES) loop.c
-DIST_SOURCES = $(libcas_la_SOURCES) $(cascli_SOURCES) loop.c
+SOURCES = $(libcas_la_SOURCES) $(cascli_SOURCES)
+DIST_SOURCES = $(libcas_la_SOURCES) $(cascli_SOURCES)
 HEADERS = $(include_HEADERS)
 ETAGS = etags
 CTAGS = ctags
@@ -241,8 +238,6 @@ libcas_la_CPPFLAGS = ${XML_CPPFLAGS} ${LIBCURL_CPPFLAGS}
 libcas_la_LIBADD = ${XML_LIBS} ${LIBCURL}
 cascli_SOURCES = main.c
 cascli_LDADD = libcas.la
-loop_sources = loop.c
-loop_LDADD = libcas.la
 all: all-am
 
 .SUFFIXES:
@@ -356,9 +351,6 @@ clean-binPROGRAMS:
 cascli$(EXEEXT): $(cascli_OBJECTS) $(cascli_DEPENDENCIES) 
 	@rm -f cascli$(EXEEXT)
 	$(LINK) $(cascli_OBJECTS) $(cascli_LDADD) $(LIBS)
-loop$(EXEEXT): $(loop_OBJECTS) $(loop_DEPENDENCIES) 
-	@rm -f loop$(EXEEXT)
-	$(LINK) $(loop_OBJECTS) $(loop_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -369,7 +361,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcas_la-cas.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcas_la-cas1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcas_la-cas2.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/loop.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 
 .c.o:
@@ -646,6 +637,9 @@ uninstall-am: uninstall-binPROGRAMS uninstall-includeHEADERS \
 	tags uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-includeHEADERS uninstall-libLTLIBRARIES
 
+
+#loop_sources = loop.c
+#loop_LDADD=libcas.la
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
