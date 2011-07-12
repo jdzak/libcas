@@ -1,7 +1,7 @@
 libcas provides a C API to the CAS1 and CAS2 (2011-06-20) protocols.
 
 Compilation and install is as expected:
-./configure && make && make instal
+./configure && make && make install
 
 However, it is strongly recommended to do out-of-directory building:
 mkdir ../libcas-build && cd ../libcas-build && ../libcas/configure && make && make install
