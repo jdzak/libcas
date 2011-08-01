@@ -324,7 +324,10 @@ cas_cas2_endDocument( CAS_XML_STATE* ctx ) {
  * cas_cas2_servicevalidate: Perform CAS2 validation protocol
  */
 CAS_CODE
-cas_cas2_servicevalidate( CAS* cas, char* cas1_validate_url, char* escaped_service, char* ticket, int renew) {
+cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_url, char* escaped_service, char* ticket, int renew) {
+	if(!cas && cas2_servicevalidate_url && escaped_service && ticket) {
+		return(CAS_INVALID_PARAMETERS);
+	}
 	if(cas->principal) { free(cas->principal);cas->principal=NULL;}
 	
 	xmlSAXHandlerPtr sax=calloc( 1,sizeof( xmlSAXHandler ) );
@@ -345,8 +348,8 @@ cas_cas2_servicevalidate( CAS* cas, char* cas1_validate_url, char* escaped_servi
 	//18=strlen("?service=")+strlen("&ticket=")+1
 	//11=strlen("&renew=true")
 	char* url;
-	if(url=calloc( strlen( cas1_validate_url )+strlen( escaped_service )+strlen( ticket )+( renew?29:18 ),sizeof( char ) )){
-		strcpy( url,cas1_validate_url );
+	if(url=calloc( strlen( cas2_servicevalidate_url )+strlen( escaped_service )+strlen( ticket )+( renew?29:18 ),sizeof( char ) )){
+		strcpy( url,cas2_servicevalidate_url );
 		strcat( url,"?service=" );
 		strcat( url,escaped_service );
 		strcat( url,"&ticket=" );

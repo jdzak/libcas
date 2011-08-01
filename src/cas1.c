@@ -38,7 +38,9 @@ cas_cas1_curl_callback( char* ptr, size_t size, size_t nmemb, CAS_BUFFER* buffer
  */
 CAS_CODE
 cas_cas1_validate( CAS* cas, char* cas1_validate_url, char* escaped_service, char* ticket, int renew) {
-
+	if(!cas && cas1_validate_url && escaped_service && ticket) {
+		return(CAS_INVALID_PARAMETERS);
+	}
 	CAS_BUFFER buffer= {0,NULL};
 	
 	buffer.contents=malloc( 1*sizeof( char ) );

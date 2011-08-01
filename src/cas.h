@@ -4,17 +4,18 @@
 typedef struct CAS CAS;
 
 typedef enum {
-	CAS_FAIL=-1,              // - Utter Failure, reason unknown
-	CAS_VALIDATION_SUCCESS=0, // - Successful validation, principal (and more?) retrieved
-	CAS1_VALIDATION_NO,       // - CAS1 validation was successfully performed, but returned no principal
-	CAS2_INVALID_REQUEST,     // - CAS2 not all of the required request parameters were present
-	CAS2_INVALID_TICKET,      // - CAS2 the ticket provided was not valid, or the ticket did not come from an initial login and "renew" was set on validation. The body of the <cas:authenticationFailure> block of the XML response SHOULD describe the exact details.
-	CAS2_INVALID_SERVICE,     // - CAS2 the ticket provided was valid, but the service specified did not match the service associated with the ticket. CAS MUST invalidate the ticket and disallow future validation of that same ticket.
-	CAS2_INTERNAL_ERROR,      // - CAS2 an internal error occurred during ticket validation
-	CAS_INVALID_RESPONSE,	  // - CAS Server responded with something unparseable
-	CAS_CURL_FAILURE,
-	CAS2_INVALID_XML,
-	CAS_ENOMEM,
+	CAS_FAIL=-1,				// - Utter Failure, reason unknown
+	CAS_VALIDATION_SUCCESS=0,	// - Successful validation, principal (and more?) retrieved
+	CAS1_VALIDATION_NO,			// - CAS1 validation was successfully performed, but returned no principal
+	CAS2_INVALID_REQUEST,		// - CAS2 not all of the required request parameters were present
+	CAS2_INVALID_TICKET,		// - CAS2 the ticket provided was not valid, or the ticket did not come from an initial login and "renew" was set on validation. The body of the <cas:authenticationFailure> block of the XML response SHOULD describe the exact details.
+	CAS2_INVALID_SERVICE,		// - CAS2 the ticket provided was valid, but the service specified did not match the service associated with the ticket. CAS MUST invalidate the ticket and disallow future validation of that same ticket.
+	CAS2_INTERNAL_ERROR,		// - CAS2 an internal error occurred during ticket validation
+	CAS_INVALID_RESPONSE,		// - CAS Server responded with something unparseable
+	CAS_CURL_FAILURE,			// - Failure in underlying cURL subsystem
+	CAS2_INVALID_XML,			// - XML response invalid
+	CAS_ENOMEM,					// - Out of memory
+	CAS_INVALID_PARAMETERS,		// - Invalid parameters supplied
 	
 } CAS_CODE;
 

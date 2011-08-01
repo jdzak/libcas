@@ -142,6 +142,8 @@ cas_code_str( CAS_CODE code ) {
 		return( "LIBCAS: Server returned unparseable response");
 	case CAS_CURL_FAILURE:
 		return( "CURL: Error with cURL Subsystem" );
+	case CAS_INVALID_PARAMETERS:
+		return( "LIBCAS: Invalid Parameters Supplied" );
 	default:
 		return( "UNKNOWN CODE" );
 	}
