@@ -18,7 +18,7 @@
 /*******************************************************************************
  *  cas_init: must be run only once to initialize resources
  */
-void*
+void
 cas_init() {
 	curl_global_init( CURL_GLOBAL_ALL );
 	LIBXML_TEST_VERSION
@@ -27,7 +27,7 @@ cas_init() {
 /*******************************************************************************
  * cas_destroy: must be run only once to cleanup anything init'd by cas_init
  */
-void*
+void
 cas_destroy() {
 	curl_global_cleanup();
 	xmlCleanupParser();
@@ -40,7 +40,7 @@ CAS*
 cas_new() {
 	CAS* cas = NULL;
 
-	if(cas = calloc( 1,sizeof( CAS ) )){
+	if((cas = calloc( 1,sizeof( CAS ) ))){
 		cas->curl = curl_easy_init();
 		curl_easy_setopt(cas->curl,CURLOPT_USERAGENT, PACKAGE_STRING );
 		curl_easy_setopt(cas->curl, CURLOPT_HEADER, 0L); 
@@ -71,10 +71,15 @@ void
 cas_set_ssl_ca( CAS* cas, const char* capath ){
 	struct stat buf;
 	stat(capath, &buf);
+	
 	if(S_ISDIR(buf.st_mode)){
 		curl_easy_setopt(cas->curl, CURLOPT_CAPATH, capath);
+		cas_debug("Setting CAPATH = %s",capath);
 	}else if(S_ISREG(buf.st_mode)){
 		curl_easy_setopt(cas->curl, CURLOPT_CAINFO, capath);
+		cas_debug("Setting CAINFO = %s",capath);
+	}else{
+		cas_debug("I SHOULD NOT BE HERE - Setting SSL %s (%d)",capath, buf.st_mode);
 	}
 }
 
@@ -112,10 +117,10 @@ cas_get_principal( CAS* cas ) {
 }
 
 /*******************************************************************************
- * cas_codestr: Resolve string from CAS_CODE
+ * cas_code_str: Resolve string from CAS_CODE
  */
 char*
-cas_codestr( CAS_CODE code ) {
+cas_code_str( CAS_CODE code ) {
 	switch( code ) {
 	case CAS_VALIDATION_SUCCESS:
 		return( "CAS: Validation Succeeded" );
@@ -142,3 +147,13 @@ cas_codestr( CAS_CODE code ) {
 	}
 }
 
+const char* cas_protocol_str(CAS_PROTOCOL protocol){
+	switch(protocol){
+		case CAS1:
+			return("cas1");
+		case CAS2:
+			return("cas2");
+		default:
+			return("unknown");
+	}
+}

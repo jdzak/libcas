@@ -82,7 +82,7 @@ am_libcas_la_OBJECTS = libcas_la-cas.lo libcas_la-cas1.lo \
 	libcas_la-cas2.lo
 libcas_la_OBJECTS = $(am_libcas_la_OBJECTS)
 PROGRAMS = $(bin_PROGRAMS)
-am_cascli_OBJECTS = main.$(OBJEXT)
+am_cascli_OBJECTS = cascli.$(OBJEXT)
 cascli_OBJECTS = $(am_cascli_OBJECTS)
 cascli_DEPENDENCIES = libcas.la
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -231,12 +231,13 @@ ACLOCAL_AMFLAGS = -I m4 --install
 
 #Public header
 include_HEADERS = cas.h
+
 #The primary library, libcas
 lib_LTLIBRARIES = libcas.la
 libcas_la_SOURCES = cas.c cas.h cas-int.h cas1.c cas2.c
 libcas_la_CPPFLAGS = ${XML_CPPFLAGS} ${LIBCURL_CPPFLAGS}
 libcas_la_LIBADD = ${XML_LIBS} ${LIBCURL}
-cascli_SOURCES = main.c
+cascli_SOURCES = cascli.c
 cascli_LDADD = libcas.la
 all: all-am
 
@@ -358,10 +359,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cascli.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcas_la-cas.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcas_la-cas1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcas_la-cas2.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

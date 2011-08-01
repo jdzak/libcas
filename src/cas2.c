@@ -91,12 +91,12 @@ static void
 cas_cas2_startDocument( CAS_XML_STATE* ctx ) {
 	switch(ctx->xml_state){
 	case XML_NEED_START_DOC:
-		debug( "XML_NEED_START_DOC->XML_NEED_OPEN_SERVICERESPONSE" );
+		cas_debug( "XML_NEED_START_DOC->XML_NEED_OPEN_SERVICERESPONSE" );
 		ctx->xml_state=XML_NEED_OPEN_SERVICERESPONSE;
 	break;
 	default:
 		ctx->xml_state=XML_FAIL;
-		debug( "XML_FAIL:(%d)",ctx->xml_state );
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
 	}
 }
 
@@ -104,12 +104,12 @@ static void
 cas_cas2_start_cas_serviceResponse( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
 	switch(ctx->xml_state){
 	case XML_NEED_OPEN_SERVICERESPONSE:
-		debug( "XML_NEED_OPEN_SERVICERESPONSE->XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE" );
+		cas_debug( "XML_NEED_OPEN_SERVICERESPONSE->XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE" );
 		ctx->xml_state=XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE;
 		break;
 	default:
 		ctx->xml_state=XML_FAIL;
-		debug( "XML_FAIL:(%d)",ctx->xml_state );
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
 	}
 }
 
@@ -117,12 +117,12 @@ static void
 cas_cas2_start_cas_authenticationSuccess( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
 	switch(ctx->xml_state){
 	case XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE:
-		debug( "XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE->XML_NEED_OPEN_USER" );
+		cas_debug( "XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE->XML_NEED_OPEN_USER" );
 		ctx->xml_state=XML_NEED_OPEN_USER;
 		break;
 	default:
 		ctx->xml_state=XML_FAIL;
-		debug( "XML_FAIL:(%d)",ctx->xml_state );
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
 	}
 }
 
@@ -130,7 +130,7 @@ static void
 cas_cas2_start_cas_authenticationFailure( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
 	switch(ctx->xml_state){
 	case XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE:
-		debug( "XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE->XML_READ_FAILUREMESSAGE" );
+		cas_debug( "XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE->XML_READ_FAILUREMESSAGE" );
 		int valuesz=attributes[4]-attributes[3];
 		if(nb_attributes==1 && strncasecmp("code",attributes[0],4)==0){
 			if(valuesz==15 && strncasecmp(attributes[3],"INVALID_REQUEST",valuesz)==0){
@@ -148,7 +148,7 @@ cas_cas2_start_cas_authenticationFailure( CAS_XML_STATE* ctx, const xmlChar* loc
 			}else{
 				ctx->xml_state=XML_FAIL;
 			}
-			debug("CODE=%d",ctx->cas->code);
+			cas_debug("CODE=%d",ctx->cas->code);
 		}else{
 			ctx->xml_state=XML_FAIL;
 		}
@@ -156,7 +156,7 @@ cas_cas2_start_cas_authenticationFailure( CAS_XML_STATE* ctx, const xmlChar* loc
 		break;
 	default:
 		ctx->xml_state=XML_FAIL;
-		debug( "XML_FAIL:(%d)",ctx->xml_state );
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
 	}
 }
 
@@ -164,12 +164,12 @@ static void
 cas_cas2_start_cas_user( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
 	switch(ctx->xml_state){
 	case XML_NEED_OPEN_USER:
-		debug( "XML_NEED_OPEN_USER->XML_READ_USER" );
+		cas_debug( "XML_NEED_OPEN_USER->XML_READ_USER" );
 		ctx->xml_state=XML_READ_USER;
 		break;
 	default:
 		ctx->xml_state=XML_FAIL;
-		debug( "XML_FAIL:(%d)",ctx->xml_state );
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
 	}
 }
 
@@ -177,12 +177,12 @@ static void
 cas_cas2_end_cas_user( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
 	switch(ctx->xml_state){
 	case XML_READ_USER:
-		debug( "XML_READ_USER->XML_NEED_CLOSE_AUTHENTICATIONSUCCESS" );
+		cas_debug( "XML_READ_USER->XML_NEED_CLOSE_AUTHENTICATIONSUCCESS" );
 		ctx->xml_state=XML_NEED_CLOSE_AUTHENTICATIONSUCCESS;
 		break;
 	default:
 		ctx->xml_state=XML_FAIL;
-		debug( "XML_FAIL:(%d)",ctx->xml_state );
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
 	}
 }
 
@@ -190,12 +190,12 @@ static void
 cas_cas2_end_cas_authenticationSuccess( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
 	switch(ctx->xml_state){
 	case XML_NEED_CLOSE_AUTHENTICATIONSUCCESS:
-		debug( "XML_NEED_CLOSE_AUTHENTICATIONSUCCESS->XML_NEED_CLOSE_SERVICERESPONSE" );
+		cas_debug( "XML_NEED_CLOSE_AUTHENTICATIONSUCCESS->XML_NEED_CLOSE_SERVICERESPONSE" );
 		ctx->xml_state=XML_NEED_CLOSE_SERVICERESPONSE;
 		break;
 	default:
 		ctx->xml_state=XML_FAIL;
-		debug( "XML_FAIL:(%d)",ctx->xml_state );
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
 	}
 }
 
@@ -203,12 +203,12 @@ static void
 cas_cas2_end_cas_authenticationFailure( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
 	switch(ctx->xml_state){
 	case XML_READ_FAILUREMESSAGE:
-		debug( "XML_NEED_CLOSE_AUTHENTICATIONFAILURE->XML_NEED_CLOSE_SERVICERESPONSE" );
+		cas_debug( "XML_NEED_CLOSE_AUTHENTICATIONFAILURE->XML_NEED_CLOSE_SERVICERESPONSE" );
 		ctx->xml_state=XML_NEED_CLOSE_SERVICERESPONSE;
 		break;
 	default:
 		ctx->xml_state=XML_FAIL;
-		debug( "XML_FAIL:(%d)",ctx->xml_state );
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
 	}
 }
 
@@ -216,19 +216,19 @@ static void
 cas_cas2_end_cas_serviceResponse( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
 	switch( ctx->xml_state){
 	case XML_NEED_CLOSE_SERVICERESPONSE:
-		debug( "XML_NEED_CLOSE_SERVICERESPONSE->XML_NEED_END_DOC" );
+		cas_debug( "XML_NEED_CLOSE_SERVICERESPONSE->XML_NEED_END_DOC" );
 		ctx->xml_state=XML_NEED_END_DOC;
 		break;
 	default:
 		ctx->xml_state=XML_FAIL;
-		debug( "XML_FAIL:(%d)",ctx->xml_state );
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
 	}
 
 }
 
 static void
 cas_cas2_startElementNs( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
-	debug( "(%d) <(%s)%s:%s>",ctx->xml_state,prefix,URI,localname );
+	cas_debug( "(%d) <(%s)%s:%s>",ctx->xml_state,prefix,URI,localname );
 	if( strncasecmp( "http://www.yale.edu/tp/cas", URI, 26 )==0 ) {
 		if ( strncasecmp( "serviceResponse",localname,15 )==0 ) {
 			cas_cas2_start_cas_serviceResponse( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
@@ -240,14 +240,14 @@ cas_cas2_startElementNs( CAS_XML_STATE* ctx, const xmlChar* localname, const xml
 			cas_cas2_start_cas_user( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
 		} else {
 			ctx->xml_state=XML_FAIL;
-			debug( "XML_FAIL:(%d)",ctx->xml_state );
+			cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
 		}
 	}
 }
 
 static void
 cas_cas2_endElementNs( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
-	debug( "(%d) </(%s)%s:%s>",ctx->xml_state,prefix,URI,localname );
+	cas_debug( "(%d) </(%s)%s:%s>",ctx->xml_state,prefix,URI,localname );
 	if( strncasecmp( "http://www.yale.edu/tp/cas", URI, 26 )==0 ) {
 		if ( strncasecmp( "serviceResponse",localname,15 )==0 ) {
 			cas_cas2_end_cas_serviceResponse( ctx,localname,prefix,URI );
@@ -259,7 +259,7 @@ cas_cas2_endElementNs( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlCh
 			cas_cas2_end_cas_user( ctx,localname,prefix,URI );
 		} else {
 			ctx->xml_state=XML_FAIL;
-			debug( "XML_FAIL:(%d)",ctx->xml_state );
+			cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
 		}
 	}
 }
@@ -300,7 +300,7 @@ cas_cas2_characters( CAS_XML_STATE* ctx, const xmlChar* ch, int len ) {
 			}
 			strncat( ctx->cas->message,ch,len );
 		}	
-		debug("MESSAGE=%s",ctx->cas->message);
+		cas_debug("MESSAGE=%s",ctx->cas->message);
 	break;
 	default: //If unexpected characters are not whitespace, XML_FAIL
 		for( i=0; i<len; i++ ) {
@@ -312,11 +312,11 @@ cas_cas2_characters( CAS_XML_STATE* ctx, const xmlChar* ch, int len ) {
 static void
 cas_cas2_endDocument( CAS_XML_STATE* ctx ) {
 	if( ctx->xml_state==XML_NEED_END_DOC ) {
-		debug( "XML_NEED_END_DOC->XML_COMPLETE" );
+		cas_debug( "XML_NEED_END_DOC->XML_COMPLETE" );
 		ctx->xml_state=XML_COMPLETE;
 	} else {
 		ctx->xml_state=XML_FAIL;
-		debug( "XML_FAIL:(%d)",ctx->xml_state );
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
 	}
 }
 
@@ -324,7 +324,7 @@ cas_cas2_endDocument( CAS_XML_STATE* ctx ) {
  * cas_cas2_servicevalidate: Perform CAS2 validation protocol
  */
 CAS_CODE
-cas_cas2_servicevalidate( CAS* cas, char* cas1_validate_url, char* escaped_service, char* ticket, int renew ) {
+cas_cas2_servicevalidate( CAS* cas, char* cas1_validate_url, char* escaped_service, char* ticket, int renew) {
 	if(cas->principal) { free(cas->principal);cas->principal=NULL;}
 	
 	xmlSAXHandlerPtr sax=calloc( 1,sizeof( xmlSAXHandler ) );
@@ -341,10 +341,9 @@ cas_cas2_servicevalidate( CAS* cas, char* cas1_validate_url, char* escaped_servi
 	xmlParserCtxtPtr ctx=xmlCreatePushParserCtxt( sax, &state, NULL,0,NULL );
 	xmlCtxtUseOptions( ctx,XML_PARSE_NOBLANKS );
 
-	//Build URL for validation
-		//18=strlen("?service=")+strlen("&ticket=")+1
-		//11=strlen("&renew=true")
-	
+//Build URL for validation
+	//18=strlen("?service=")+strlen("&ticket=")+1
+	//11=strlen("&renew=true")
 	char* url;
 	if(url=calloc( strlen( cas1_validate_url )+strlen( escaped_service )+strlen( ticket )+( renew?29:18 ),sizeof( char ) )){
 		strcpy( url,cas1_validate_url );
@@ -352,6 +351,7 @@ cas_cas2_servicevalidate( CAS* cas, char* cas1_validate_url, char* escaped_servi
 		strcat( url,escaped_service );
 		strcat( url,"&ticket=" );
 		strcat( url,ticket );
+		if(renew) strcat( url, "&renew=true");
 
 		//Setup curl connection
 		curl_easy_setopt( cas->curl,CURLOPT_URL, url );

@@ -1,5 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4 --install
 SUBDIRS = src . tests
+
 #check_SCRIPTS=$(srcdir)/tests/test000-cas1-no.sh $(srcdir)/tests/test001-cas1-myprinc.sh $(srcdir)/tests/test002-cas1-garbage.sh $(srcdir)/tests/test003-cas2-no.sh $(srcdir)/tests/test004-cas2-myprinc.sh $(srcdir)/tests/test005-cas2-garbage.sh
 #check_SCRIPTS=$(shell find $(srcdir)/tests/ -type f | sort )
 #TESTS=${check_SCRIPTS}

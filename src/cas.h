@@ -18,15 +18,29 @@ typedef enum {
 	
 } CAS_CODE;
 
-void* cas_init();
-void* cas_destroy();
+typedef enum {
+	CAS1,
+	CAS2,
+//	SAML11,
+//	SAML20
+} CAS_PROTOCOL;
+
+void cas_init();
+void cas_destroy();
 
 CAS* cas_new();
 void cas_zap( CAS* cas );
 
-CAS_CODE cas_cas1_validate( CAS* cas, char* cas1_validate_url, char* escaped_service, char* ticket, int renew );
-CAS_CODE cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_url, char* escaped_service, char* ticket, int renew );
+CAS_CODE cas_cas1_validate( CAS* cas, char* cas1_validate_url, char* escaped_service, char* ticket, int renew);
+CAS_CODE cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_url, char* escaped_service, char* ticket, int renew);
+const char* cas_protocol_str(CAS_PROTOCOL protocol);
 
 char* cas_get_principal( CAS* cas );
 #define cas_get_message cas_get_principal
+#endif
+
+#ifdef DEBUG
+#define cas_debug(format, args...) fprintf(stderr,"\n**********\n[%s(%d):%s]:\n" format "\n**********\n", __FILE__,__LINE__,__func__,## args)
+#else
+#define cas_debug(format, args...)
 #endif

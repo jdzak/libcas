@@ -14,5 +14,5 @@ Content-Type: text/plain
 </cas:serviceResponse>
 
 " | /bin/nc -l 8081 1>/dev/null ) &
-p=`../src/cascli cas2 http://localhost:8081 http://localhost 12345`
+p=`../src/cascli -p cas2 http://localhost:8081 http://localhost 12345`
 if [ "$p" = "myprinc" ]; then /bin/true; else /bin/false;fi

@@ -21,7 +21,7 @@ cas_cas1_curl_callback( char* ptr, size_t size, size_t nmemb, CAS_BUFFER* buffer
 	size_t write_size=size*nmemb;
 	
 	void* tmp=buffer->contents;
-	if(buffer->contents=realloc( buffer->contents, buffer->size+write_size )){
+	if((buffer->contents=realloc( buffer->contents, buffer->size+write_size ))){
 		memcpy( &buffer->contents[buffer->size],ptr,write_size );
 
 		buffer->size=buffer->size+write_size;
@@ -37,7 +37,7 @@ cas_cas1_curl_callback( char* ptr, size_t size, size_t nmemb, CAS_BUFFER* buffer
  *  to obtain principal and store it in cas->principal.
  */
 CAS_CODE
-cas_cas1_validate( CAS* cas, char* cas1_validate_url, char* escaped_service, char* ticket, int renew ) {
+cas_cas1_validate( CAS* cas, char* cas1_validate_url, char* escaped_service, char* ticket, int renew) {
 
 	CAS_BUFFER buffer= {0,NULL};
 	
@@ -58,7 +58,9 @@ cas_cas1_validate( CAS* cas, char* cas1_validate_url, char* escaped_service, cha
 		strcat( url,escaped_service );
 		strcat( url,"&ticket=" );
 		strcat( url,ticket );
+		if(renew) strcat( url, "&renew=true");
 
+		cas_debug("URL: (%d) %s",urllen,url);
 		//Setup curl connection
 		curl_easy_setopt( cas->curl,CURLOPT_URL, url );
 

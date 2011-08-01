@@ -24,7 +24,9 @@ openssl req -new -keyout ${tmpfile}.key  -nodes -subj "/C=ZZ/ST=STATE/L=LOCALE/O
 c_rehash $PWD
 openssl s_server -accept 8443 -cert ${tmpfile}.crt -key ${tmpfile}.key -HTTP &
 pid=$!
-p=`../src/cascli cas2 https://localhost:8443/${tmpfile} localhost 12345 ./`
+c="../src/cascli -p cas2  -c $PWD/${tmpfile}.crt https://localhost:8443/${tmpfile} localhost 12345"
+echo $c
+p=`$c`
 
 kill $pid
 

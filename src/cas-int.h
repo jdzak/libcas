@@ -10,12 +10,6 @@
 #ifndef CAS_INT_H
 #define CAS_INT_H
 
-#ifdef DEBUG
-#define debug(format, args...) fprintf(stderr,"[%s(%d):%s] " format "\n", __FILE__,__LINE__,__func__,## args)
-#else
-#define debug(format, args...)
-#endif
-
 struct CAS {
 	CURL* curl;
 
