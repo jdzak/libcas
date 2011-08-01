@@ -15,27 +15,48 @@ Examples can be found in the /examples directory of the distribution.
 
 Basic library usage is as follows:
 
-#include ...
-#include "../src/cas.h"								//-- Include CAS public header
+	#include ...
 
-cas_init();											//-- Init libcas *once* per process
-CAS* cas=cas_new();									//-- Obtain new CAS handle, not to be shared across threads
-cas_set_ssl_ca(cas,"/etc/ssl/certs");				//-- (Optional) Set SSL Certificate location
-cas_set_ssl_validate_server(cas,1);					//-- (Optional) Enable certificate validation (default)
-
-													//-- Call validation function for supplied protocol
-CAS_CODE code=cas_cas2_servicevalidate(				//-- CAS2 Validation Function
-	cas,											//-- CAS Handle
-	"http://localhost:12345/cas/serviceValidate",   //-- Validation URL
-	"http%3a%2f%2flocalhost%2f",					//-- Escape Service
-	cas_service_ticket,								//-- Service Ticket
-	0);												//-- Renew Flag (0|1)
-if( code==CAS_VALIDATION_SUCCESS ) {
-	char* p=cas_get_principal( cas );				//--  Retrieve principal from response
-} else {
-	char* m=cas_get_message(cas);					//-- Retrieve error message from response
-}
+//-- Include CAS public header
+	#include "../src/cas.h"								
 	
-cas_zap( cas );										//-- Destroy handle
-cas_destroy();										//-- Destroy libcas session
+	...
+
+//-- Init libcas *once* per process
+	cas_init();											
+
+//-- Obtain new CAS handle, not to be shared across threads
+	CAS* cas=cas_new();									
+
+//-- (Optional) Enable certificate validation (default)
+	cas_set_ssl_validate_server(cas,1);					
+
+//-- (Optional) Set SSL Certificate location
+	cas_set_ssl_ca(cas,"/etc/ssl/certs");				
+
+//-- CAS2 Validation Function
+//--   (CAS Handle,Validation URL,Escaped Service,Ticket,Renew Flag)
+	CAS_CODE code=cas_cas2_servicevalidate(				
+		cas,											
+		"http://localhost:12345/cas/serviceValidate",   
+		"http%3a%2f%2flocalhost%2f",					
+		cas_service_ticket,								
+		0);												
+
+//-- Check return code
+	if( code==CAS_VALIDATION_SUCCESS ) {
+
+//--  Retrieve principal from response
+		char* p=cas_get_principal( cas );
+	} else {
+
+//-- Retrieve error message from response
+		char* m=cas_get_message(cas);
+	}
+
+//-- Destroy handle	
+	cas_zap( cas );
+
+//-- Destroy libcas session
+	cas_destroy();
 
