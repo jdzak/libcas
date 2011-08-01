@@ -3,8 +3,13 @@ libcas provides a C API to the CAS1 and CAS2 (2011-06-20) protocols.
 Compilation and install is as expected:
 ./configure && make && make install
 
-However, it is strongly recommended to do out-of-directory building:
+However, it is *strongly* recommended to do out-of-directory building:
 mkdir ../libcas-build && cd ../libcas-build && ../libcas/configure && make && make install
 
-This will install both libcas in /usr/local/lib and clicas in /usr/local/bin .
+This will install libcas in /usr/local/lib and clicas in /usr/local/bin .
+
+Note that tests can be run using "make check", but require "nc" and "openssl" command line
+	utilities to be installed.
+	
+Examples can be found in the /examples directory of the distribution.
 
