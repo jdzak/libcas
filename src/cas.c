@@ -117,6 +117,14 @@ cas_get_principal( CAS* cas ) {
 }
 
 /*******************************************************************************
+ * cas_get_message: Retrieve a resolved principal
+ */
+char*
+cas_get_message( CAS* cas ) {
+	return( cas->message );
+}
+
+/*******************************************************************************
  * cas_code_str: Resolve string from CAS_CODE
  */
 char*
@@ -146,16 +154,5 @@ cas_code_str( CAS_CODE code ) {
 		return( "LIBCAS: Invalid Parameters Supplied" );
 	default:
 		return( "UNKNOWN CODE" );
-	}
-}
-
-const char* cas_protocol_str(CAS_PROTOCOL protocol){
-	switch(protocol){
-		case CAS1:
-			return("cas1");
-		case CAS2:
-			return("cas2");
-		default:
-			return("unknown");
 	}
 }

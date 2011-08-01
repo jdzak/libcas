@@ -11,6 +11,7 @@ AC_CONFIG_FILES([
 	Makefile
 	src/Makefile
 	tests/Makefile
+	Doxyfile
 ])
 
 AC_CONFIG_SRCDIR([src/cas.c])
@@ -30,5 +31,9 @@ AM_PATH_XML2(2.7.8,[AC_DEFINE([HAVE_LIBXML2], [1], [Define to 1 if you have a fu
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
+
+# Check for doxygen
+AC_PATH_PROG([DOXYGEN],["doxygen"])
+AM_CONDITIONAL([DOXYGEN],[ test "x$DOXYGEN" != "x" ])
 
 AC_OUTPUT

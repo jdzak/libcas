@@ -17,7 +17,7 @@ casvalidate [-p <(cas1)|cas2>] [-r] [-k] [-c </path/to/CA>] <validation_url> <es
 int
 main( int argc, char** argv ) {
 	CAS_CODE code=CAS_FAIL;
-	CAS_PROTOCOL protocol=CAS1;
+	char* protocol="cas2";
 	int cas_renew=0;
 	char* cas_ca_location=NULL;
 	int cas_ca_verify=1;
@@ -33,9 +33,9 @@ main( int argc, char** argv ) {
 		if(strcmp(argv[i],"-p")==0){
 			i++;
 			if(strcmp(argv[i],"cas1")==0){
-				protocol=CAS1;
+				protocol=argv[i];
 			}else if(strcmp(argv[i],"cas2")==0){
-				protocol=CAS2;
+				protocol=argv[i];
 			}else{
 				fprintf(stderr,"Unknown protocol %s\n",argv[i]);
 				usage();
@@ -66,7 +66,7 @@ main( int argc, char** argv ) {
 	cas_escaped_service=argv[i++];
 	cas_service_ticket=argv[i++];
 	
-	cas_debug("\nValidation URL: %s\nEscaped Service: %s\nService Ticket:%s\nProtocol: %s\nMode: %s\nCertificate Path: %s\nVerify Server Certificate: %s\n",cas_validation_url,cas_escaped_service,cas_service_ticket,cas_protocol_str(protocol),cas_code_str_str(mode),(cas_ca_location?(cas_ca_location):("libcurl default")),(cas_ca_verify?("yes"):("no")));
+	cas_debug("\nValidation URL: %s\nEscaped Service: %s\nService Ticket:%s\nProtocol: %s\nMode: %s\nCertificate Path: %s\nVerify Server Certificate: %s\n",cas_validation_url,cas_escaped_service,cas_service_ticket,protocol,cas_code_str_str(mode),(cas_ca_location?(cas_ca_location):("libcurl default")),(cas_ca_verify?("yes"):("no")));
 	
 	//-- Init libcas, obtain new CAS handle
 	cas_init();
@@ -81,9 +81,9 @@ main( int argc, char** argv ) {
 	}
 	
 	//-- Call appropriate validation function for supplied protocol
-	if( protocol==CAS1 ) {
+	if( strcmp(protocol,"cas1")==0 ) {
 		code=cas_cas1_validate( cas,cas_validation_url,cas_escaped_service,cas_service_ticket, cas_renew);
-	} else if( protocol==CAS2 ) {
+	} else if( strcmp(protocol,"cas2")==0 ) {
 		code=cas_cas2_servicevalidate( cas,cas_validation_url,cas_escaped_service,cas_service_ticket, cas_renew);
 	}
 

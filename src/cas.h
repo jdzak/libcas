@@ -1,3 +1,34 @@
+/**
+ *
+ * \mainpage cas.h - libcas API
+ *
+ * Basic library usage is as follows:
+@code
+#include <cas.h>
+
+//Initialize and get handle
+cas_init();
+CAS* cas=cas_new();
+
+//Set paramaters
+cas_set_ssl_validate_server(cas,1);
+cas_set_ssl_ca(cas,"/etc/ssl/certs");
+
+//Do the validation
+CAS_CODE code=cas_cas2_servicevalidate(cas, "http://localhost:12345/cas/serviceValidate", "http%3a%2f%2flocalhost%2f", cas_service_ticket, 0);
+
+//Check the response and retrieve results
+if( code==CAS_VALIDATION_SUCCESS ) {
+	char* p=cas_get_principal( cas );
+} else {
+	char* m=cas_get_message(cas);
+}
+
+//Teardown
+cas_zap( cas );
+cas_destroy();
+@endcode
+ */
 #ifndef CAS_H
 #define CAS_H
 
@@ -16,15 +47,8 @@ typedef enum {
 	CAS2_INVALID_XML,			// - XML response invalid
 	CAS_ENOMEM,					// - Out of memory
 	CAS_INVALID_PARAMETERS,		// - Invalid parameters supplied
-	
-} CAS_CODE;
 
-typedef enum {
-	CAS1,
-	CAS2,
-//	SAML11,
-//	SAML20
-} CAS_PROTOCOL;
+} CAS_CODE;
 
 void cas_init();
 void cas_destroy();
@@ -32,12 +56,21 @@ void cas_destroy();
 CAS* cas_new();
 void cas_zap( CAS* cas );
 
+/**
+ *	Perform CAS1 validation
+ *  @param cas a CAS handle supplied by cas_new(). cas_get_principal(cas) or cas_get_message(cas) can be used to fetch results of this function call.
+ *  @param cas1_validate_url the URL for the CAS1 validation service.
+ *  @param escaped_service the escaped service name.
+ *  @param ticket the service ticket to be validated.
+ *  @param renew flag (1=true) to specify that the ticket was obtained with renew.
+ *  @return a CAS_CODE representing the status of the request.
+ */
 CAS_CODE cas_cas1_validate( CAS* cas, char* cas1_validate_url, char* escaped_service, char* ticket, int renew);
 CAS_CODE cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_url, char* escaped_service, char* ticket, int renew);
-const char* cas_protocol_str(CAS_PROTOCOL protocol);
 
 char* cas_get_principal( CAS* cas );
-#define cas_get_message cas_get_principal
+char* cas_get_message( CAS* cas );
+
 #endif
 
 #ifdef DEBUG
