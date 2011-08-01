@@ -21,9 +21,9 @@ LT_INIT
 
 # Checks for libraries.
 LIBCURL_CHECK_CONFIG([yes],7.21.0,[],[AC_MSG_ERROR([libcurl not found])])
-AM_PATH_XML2(2.7.8,,[AC_MSG_ERROR([libxml2 not found])])
+AM_PATH_XML2(2.7.8,[AC_DEFINE([HAVE_LIBXML2], [1], [Define to 1 if you have a functional libxml2 library.])],[AC_MSG_ERROR([libxml2 not found])])
 
-PKG_CHECK_MODULES([CHECK], [check >= 0.9.4],,[AC_MSG_WARN([libcheck not found -- check unit tests will not be run])])
+#PKG_CHECK_MODULES([CHECK], [check >= 0.9.4],,[AC_MSG_WARN([libcheck not found -- check unit tests will not be run])])
 
 # Checks for header files.
 
