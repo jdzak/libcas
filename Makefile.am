@@ -4,6 +4,9 @@ SUBDIRS = src . tests
 EXTRA_DIST=$(shell ls $(srcdir)/examples/* ) Doxyfile.in
 
 if DOXYGEN
+
+all-local: html
+
 html-local:	
 	doxygen Doxyfile
 endif
