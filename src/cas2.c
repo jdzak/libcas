@@ -208,6 +208,19 @@ cas_cas2_end_cas_user( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlCh
 }
 
 static void
+cas_cas2_end_cas_proxyGrantingTicket( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
+	switch(ctx->xml_state){
+	case XML_READ_PROXYGRANTINGTICKET:
+		cas_debug( "XML_READ_PROXYGRANTINGTICKET->XML_NEED_CLOSE_AUTHENTICATIONSUCCESS" );
+		ctx->xml_state=XML_NEED_CLOSE_AUTHENTICATIONSUCCESS;
+		break;
+	default:
+		ctx->xml_state=XML_FAIL;
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
+	}
+}
+
+static void
 cas_cas2_end_cas_authenticationSuccess( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
 	switch(ctx->xml_state){
 	case XML_NEED_CLOSE_AUTHENTICATIONSUCCESS:
@@ -280,6 +293,8 @@ cas_cas2_endElementNs( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlCh
 			cas_cas2_end_cas_authenticationFailure( ctx,localname,prefix,URI );
 		} else if ( strncasecmp( "user",localname,4 )==0 ) {
 			cas_cas2_end_cas_user( ctx,localname,prefix,URI );
+		} else if ( strncasecmp( "proxyGrantingTicket",localname,19 )==0 ) {
+			cas_cas2_end_cas_proxyGrantingTicket( ctx,localname,prefix,URI );
 		} else {
 			ctx->xml_state=XML_FAIL;
 			cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
