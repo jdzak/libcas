@@ -97,9 +97,11 @@ cas_zap( CAS* cas ) {
 	if(cas){
 		if( cas->curl ) curl_easy_cleanup( cas->curl );
 		if( cas->principal ) free( cas->principal );
+		if( cas->pgtiou ) free( cas->pgtiou );
 		
 		cas->curl=NULL;
 		cas->principal=NULL;
+		cas->pgtiou=NULL
 		cas->message=NULL;
 		
 		free( cas );

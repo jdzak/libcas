@@ -314,7 +314,6 @@ cas_cas2_characters( CAS_XML_STATE* ctx, const xmlChar* ch, int len ) {
 			strncpy( ctx->cas->message,ch,len );
 			ctx->cas->message[len]='\0';
 		} else {
-			
 			void* tmp=ctx->cas->message;
 			ctx->cas->message=realloc( ctx->cas->message,strlen( ctx->cas->message )+len+1 );
 			if(ctx->cas->message==NULL){
@@ -324,6 +323,23 @@ cas_cas2_characters( CAS_XML_STATE* ctx, const xmlChar* ch, int len ) {
 			strncat( ctx->cas->message,ch,len );
 		}	
 		cas_debug("MESSAGE=%s",ctx->cas->message);
+	break;
+	case XML_READ_PROXYGRANTINGTICKET:
+		if( !ctx->cas->pgtiou ) {
+			ctx->cas->pgtiou=calloc( len+1,sizeof( char ) );
+			if(ctx->cas->pgtiou==NULL) return;
+			strncpy( ctx->cas->pgtiou,ch,len );
+			ctx->cas->pgtiou[len]='\0';
+		} else {
+			void* tmp=ctx->cas->pgtiou;
+			ctx->cas->pgtiou=realloc( ctx->cas->pgtiou,strlen( ctx->cas->pgtiou )+len+1 );
+			if(ctx->cas->pgtiou==NULL){
+				free(tmp);
+				return;
+			}
+			strncat( ctx->cas->pgtiou,ch,len );
+		}
+		cas_debug("PGTIOU=%s",ctx->cas->pgtiou);
 	break;
 	default: //If unexpected characters are not whitespace, XML_FAIL
 		for( i=0; i<len; i++ ) {
@@ -352,6 +368,7 @@ cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_url, char* escape
 		return(CAS_INVALID_PARAMETERS);
 	}
 	if(cas->principal) { free(cas->principal);cas->principal=NULL;}
+	if(cas->pgtiou) { free(cas->pgtiou);cas->pgtiou=NULL;}
 	
 	xmlSAXHandlerPtr sax=calloc( 1,sizeof( xmlSAXHandler ) );
 	if(sax==NULL) return(CAS_ENOMEM);

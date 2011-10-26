@@ -17,6 +17,7 @@ struct CAS {
 	CAS_CODE code;
 	union{
 		char* principal;
+		char* pgtiou;
 		char* message;
 	};
 	//hashmap? attributes;
