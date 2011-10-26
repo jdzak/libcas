@@ -70,6 +70,8 @@ typedef struct {
 		XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE,
 		XML_NEED_OPEN_USER,
 		XML_READ_USER,
+		XML_NEED_OPEN_PROXYGRANTINGTICKET_CLOSE_AUTHENTICATIONSUCCESS,
+		XML_READ_PROXYGRANTINGTICKET,
 		XML_NEED_CLOSE_USER,
 		XML_NEED_CLOSE_AUTHENTICATIONSUCCESS,
 		XML_READ_FAILUREMESSAGE,
@@ -180,11 +182,24 @@ cas_cas2_start_cas_user( CAS_XML_STATE* ctx, const xmlChar* localname, const xml
 }
 
 static void
+cas_cas2_start_proxyGrantingTicket( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
+  switch(ctx->xml_state){
+	case XML_NEED_OPEN_PROXYGRANTINGTICKET_CLOSE_AUTHENTICATIONSUCCESS:
+		cas_debug( "XML_NEED_OPEN_PROXYGRANTINGTICKET->XML_READ_PROXYGRANTINGTICKET" );
+		ctx->xml_state=XML_READ_PROXYGRANTINGTICKET;
+		break;
+	default:
+		ctx->xml_state=XML_FAIL;
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
+	}
+}
+
+static void
 cas_cas2_end_cas_user( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
 	switch(ctx->xml_state){
 	case XML_READ_USER:
-		cas_debug( "XML_READ_USER->XML_NEED_CLOSE_AUTHENTICATIONSUCCESS" );
-		ctx->xml_state=XML_NEED_CLOSE_AUTHENTICATIONSUCCESS;
+		cas_debug( "XML_READ_USER->XML_NEED_OPEN_PROXYGRANTINGTICKET_CLOSE_AUTHENTICATIONSUCCESS" );
+		ctx->xml_state=XML_NEED_OPEN_PROXYGRANTINGTICKET_CLOSE_AUTHENTICATIONSUCCESS;
 		break;
 	default:
 		ctx->xml_state=XML_FAIL;
@@ -244,6 +259,8 @@ cas_cas2_startElementNs( CAS_XML_STATE* ctx, const xmlChar* localname, const xml
 			cas_cas2_start_cas_authenticationFailure( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
 		} else if ( strncasecmp( "user",localname,4 )==0 ) {
 			cas_cas2_start_cas_user( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
+		} else if ( strncasecmp( "proxyGrantingTicket",localname,19 )==0 ) {
+			cas_cas2_start_proxyGrantingTicket( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
 		} else {
 			ctx->xml_state=XML_FAIL;
 			cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
