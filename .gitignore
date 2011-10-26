@@ -1,1 +1,16 @@
 autom4te.cache
+.DS_Store
+Doxyfile
+Makefile
+bin/
+build-libcas.sh
+config.h
+config.log
+config.status
+install/
+lib/
+libtool
+src/.deps/
+src/Makefile
+stamp-h1
+tests/Makefile
