@@ -62,7 +62,7 @@ cas_cas1_validate( CAS* cas, char* cas1_validate_url, char* escaped_service, cha
 		strcat( url,ticket );
 		if(renew) strcat( url, "&renew=true");
 
-		cas_debug("URL: (%d) %s",urllen,url);
+		cas_debug("URL: (%d) %s",strlen(url),url);
 		//Setup curl connection
 		curl_easy_setopt( cas->curl,CURLOPT_URL, url );
 

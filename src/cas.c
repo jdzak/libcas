@@ -101,7 +101,7 @@ cas_zap( CAS* cas ) {
 		
 		cas->curl=NULL;
 		cas->principal=NULL;
-		cas->pgtiou=NULL
+		cas->pgtiou=NULL;
 		cas->message=NULL;
 		
 		free( cas );
@@ -119,11 +119,19 @@ cas_get_principal( CAS* cas ) {
 }
 
 /*******************************************************************************
- * cas_get_message: Retrieve a resolved principal
+ * cas_get_message: Retrieve a resolved message
  */
 char*
 cas_get_message( CAS* cas ) {
 	return( cas->message );
+}
+
+/*******************************************************************************
+ * cas_get_pgtiou: Retrieve a resolved pgtiou
+ */
+char*
+cas_get_pgtiou( CAS* cas ) {
+	return( cas->pgtiou );
 }
 
 /*******************************************************************************
