@@ -99,10 +99,13 @@ cas_zap( CAS* cas ) {
 		if( cas->curl ) curl_easy_cleanup( cas->curl );
 		if( cas->principal ) free( cas->principal );
 		if( cas->pgtiou ) free( cas->pgtiou );
+		if( cas->pgt ) free( cas-> pgt );
+		if( cas->message ) free( cas->message );
 		
 		cas->curl=NULL;
 		cas->principal=NULL;
 		cas->pgtiou=NULL;
+		cas->pgt=NULL;
 		cas->message=NULL;
 		
 		free( cas );
@@ -133,6 +136,14 @@ cas_get_message( CAS* cas ) {
 char*
 cas_get_pgtiou( CAS* cas ) {
 	return( cas->pgtiou );
+}
+
+/*******************************************************************************
+ * cas_get_pgtiou: Retrieve a resolved pgtiou
+ */
+char*
+cas_get_pgt( CAS* cas ) {
+	return( cas->pgt );
 }
 
 /*******************************************************************************

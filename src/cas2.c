@@ -93,6 +93,15 @@ cas_cas2_curl_callback( char* chunk, size_t size, size_t nmemb, xmlParserCtxtPtr
 }
 
 /*******************************************************************************
+ * cas_cas2_curl_retrievepgt_callback: cURL callback accepting received pgt data
+ */
+static size_t
+cas_cas2_curl_retrievepgt_callback( char* chunk, size_t size, size_t nmemb, void *userp  ) {
+	char **response_ptr =  (char**)userp;
+	*response_ptr = strndup(chunk, (size_t)(size *nmemb));
+	return( size*nmemb );}
+
+/*******************************************************************************
  * cas2 SAX handlers: SAX handlers to parse CAS2 XML and drive state machine
  */
 static void
@@ -380,14 +389,14 @@ cas_cas2_endDocument( CAS_XML_STATE* ctx ) {
  */
 CAS_CODE
 cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew) {
-	return cas_cas2_servicevalidate_proxyticketing( cas, cas2_servicevalidate_baseurl, escaped_service, ticket, renew, NULL, NULL) ;
+	return cas_cas2_serviceValidate_proxyTicketing( cas, cas2_servicevalidate_baseurl, escaped_service, ticket, renew, NULL, NULL) ;
 }
 	
 /*******************************************************************************
  * cas_cas2_servicevalidate_proxyticketing: Perform CAS2 validation protocol
  */
 CAS_CODE
-cas_cas2_servicevalidate_proxyticketing( CAS* cas, char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew, char* escaped_pgt_receive_url, char* escaped_pgt_retrieve_url) {
+cas_cas2_serviceValidate_proxyTicketing( CAS* cas, char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew, char* escaped_pgt_receive_url, char* pgt_retrieve_baseurl) {
 	if(!cas && cas2_servicevalidate_baseurl && escaped_service && ticket) {
 		return(CAS_INVALID_PARAMETERS);
 	}
@@ -408,7 +417,7 @@ cas_cas2_servicevalidate_proxyticketing( CAS* cas, char* cas2_servicevalidate_ba
 	xmlParserCtxtPtr ctx=xmlCreatePushParserCtxt( sax, &state, NULL,0,NULL );
 	xmlCtxtUseOptions( ctx,XML_PARSE_NOBLANKS );
 
-	char* url = cas_cas2_servicevalidate_url(cas2_servicevalidate_baseurl, escaped_service, ticket, renew, escaped_pgt_receive_url);
+	char* url = cas_cas2_serviceValidateUrl(cas2_servicevalidate_baseurl, escaped_service, ticket, renew, escaped_pgt_receive_url);
 	if (url != NULL) {
 		//Setup curl connection
 		curl_easy_setopt( cas->curl,CURLOPT_URL, url );
@@ -427,6 +436,21 @@ cas_cas2_servicevalidate_proxyticketing( CAS* cas, char* cas2_servicevalidate_ba
 		xmlFreeParserCtxt(ctx);
 		if(curl_status==0){
 			if( state.xml_state==XML_COMPLETE ) {
+				if (cas->pgtiou != NULL) {
+					char* pgt_retrieve_url = cas_cas2_retrievePgtUrl(pgt_retrieve_baseurl, cas->pgtiou);
+					cas_debug( "pgt_retrieve_url:(%s)",pgt_retrieve_url );
+					if (pgt_retrieve_url != NULL) {
+						char* pgt = cas_cas2_retrievePgt(pgt_retrieve_url, cas);
+						cas_debug( "pgt:(%s)",pgt );
+						if (pgt != NULL) {
+							cas->pgt = pgt;
+						} else {
+							return(CAS_INVALID_RESPONSE);
+						}
+						free(pgt);
+						free(pgt_retrieve_url);
+					}
+				}
 				return( cas->code );
 			}else if(xmlParseError){
 				return(CAS2_INVALID_XML);
@@ -447,7 +471,7 @@ cas_cas2_servicevalidate_proxyticketing( CAS* cas, char* cas2_servicevalidate_ba
  * cas_cas2_servicevalidate_url: Builds CAS2 service ticket validation url
  */
 char*
-cas_cas2_servicevalidate_url(char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew, char* escaped_pgt_receive_url) {
+cas_cas2_serviceValidateUrl(char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew, char* escaped_pgt_receive_url) {
 	int size = strlen( cas2_servicevalidate_baseurl ) + 
 		9 + strlen( escaped_service ) + // 9 = strlen("?service=")
 		8 + strlen( ticket ) + 			// 8 = strlen("&ticket=")
@@ -456,17 +480,42 @@ cas_cas2_servicevalidate_url(char* cas2_servicevalidate_baseurl, char* escaped_s
 		
 	
 	char* url;
-	if(url=calloc(size,sizeof( char ) )){
+	if (url=calloc(size,sizeof( char ) )){
 		strcpy( url,cas2_servicevalidate_baseurl );
 		strcat( url,"?service=" );
 		strcat( url,escaped_service );
 		strcat( url,"&ticket=" );
 		strcat( url,ticket );
-		if(renew) strcat( url, "&renew=true");
-		if(escaped_pgt_receive_url) {
+		if (renew) strcat( url, "&renew=true");
+		if (escaped_pgt_receive_url) {
 			strcat(url, "&pgtUrl=");
 			strcat(url, escaped_pgt_receive_url);
 		}
 	} 
 	return url;
+}
+
+char* cas_cas2_retrievePgtUrl(char* baseUrl, char* pgtiou) {
+	int size = strlen( baseUrl ) +
+		8 + strlen( pgtiou );	 // 8 = strlen("?pgtIou=")
+
+	char* url;
+	if (url=calloc(size,sizeof( char) )) {
+		strcpy( url, baseUrl);
+		strcat( url, "?pgtIou=");
+		strcat( url, pgtiou);
+	}
+	return url;
+}
+
+char* cas_cas2_retrievePgt(char* url, CAS* cas) {
+	char* pgt;
+
+	curl_easy_setopt( cas->curl,CURLOPT_URL, url );
+	curl_easy_setopt( cas->curl,CURLOPT_WRITEFUNCTION, ( curl_write_callback )cas_cas2_curl_retrievepgt_callback );
+	curl_easy_setopt( cas->curl,CURLOPT_WRITEDATA, &pgt );
+
+	curl_easy_perform( cas->curl );
+
+	return pgt;
 }
