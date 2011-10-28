@@ -408,9 +408,6 @@ cas_cas2_servicevalidate_proxyticketing( CAS* cas, char* cas2_servicevalidate_ba
 	xmlParserCtxtPtr ctx=xmlCreatePushParserCtxt( sax, &state, NULL,0,NULL );
 	xmlCtxtUseOptions( ctx,XML_PARSE_NOBLANKS );
 
-//Build URL for validation
-	//18=strlen("?service=")+strlen("&ticket=")+1
-	//11=strlen("&renew=true")
 	char* url = cas_cas2_servicevalidate_url(cas2_servicevalidate_baseurl, escaped_service, ticket, renew, escaped_pgt_receive_url);
 	if (url != NULL) {
 		//Setup curl connection
@@ -451,9 +448,6 @@ cas_cas2_servicevalidate_proxyticketing( CAS* cas, char* cas2_servicevalidate_ba
  */
 char*
 cas_cas2_servicevalidate_url(char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew, char* escaped_pgt_receive_url) {
-	//Build URL for validation
-	//18=strlen("?service=")+strlen("&ticket=")+1
-	
 	int size = strlen( cas2_servicevalidate_baseurl ) + 
 		9 + strlen( escaped_service ) + // 9 = strlen("?service=")
 		8 + strlen( ticket ) + 			// 8 = strlen("&ticket=")
