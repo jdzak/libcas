@@ -84,7 +84,7 @@ main( int argc, char** argv ) {
 	if( strcmp(protocol,"cas1")==0 ) {
 		code=cas_cas1_validate( cas,cas_validation_url,cas_escaped_service,cas_service_ticket, cas_renew);
 	} else if( strcmp(protocol,"cas2")==0 ) {
-		code=cas_cas2_servicevalidate( cas,cas_validation_url,cas_escaped_service,cas_service_ticket, cas_renew, NULL);
+		code=cas_cas2_servicevalidate( cas,cas_validation_url,cas_escaped_service,cas_service_ticket, cas_renew);
 	}
 
 	//-- Check code, act appropriately

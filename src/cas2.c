@@ -376,10 +376,18 @@ cas_cas2_endDocument( CAS_XML_STATE* ctx ) {
 }
 
 /*******************************************************************************
- * cas_cas2_servicevalidate: Perform CAS2 validation protocol
+ * cas_cas2_servicevalidate: Perform CAS2 validation protocol without proxy ticketing
  */
 CAS_CODE
-cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew, char* escaped_pgt_url) {
+cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew) {
+	return cas_cas2_servicevalidate_proxyticketing( cas, cas2_servicevalidate_baseurl, escaped_service, ticket, renew, NULL, NULL) ;
+}
+	
+/*******************************************************************************
+ * cas_cas2_servicevalidate_proxyticketing: Perform CAS2 validation protocol
+ */
+CAS_CODE
+cas_cas2_servicevalidate_proxyticketing( CAS* cas, char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew, char* escaped_pgt_receive_url, char* escaped_pgt_retrieve_url) {
 	if(!cas && cas2_servicevalidate_baseurl && escaped_service && ticket) {
 		return(CAS_INVALID_PARAMETERS);
 	}
@@ -403,7 +411,7 @@ cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_baseurl, char* es
 //Build URL for validation
 	//18=strlen("?service=")+strlen("&ticket=")+1
 	//11=strlen("&renew=true")
-	char* url = cas_cas2_servicevalidate_url(cas2_servicevalidate_baseurl, escaped_service, ticket, renew, escaped_pgt_url);
+	char* url = cas_cas2_servicevalidate_url(cas2_servicevalidate_baseurl, escaped_service, ticket, renew, escaped_pgt_receive_url);
 	if (url != NULL) {
 		//Setup curl connection
 		curl_easy_setopt( cas->curl,CURLOPT_URL, url );
@@ -442,15 +450,16 @@ cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_baseurl, char* es
  * cas_cas2_servicevalidate_url: Builds CAS2 service ticket validation url
  */
 char*
-cas_cas2_servicevalidate_url(char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew, char* escaped_pgt_url) {
+cas_cas2_servicevalidate_url(char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew, char* escaped_pgt_receive_url) {
 	//Build URL for validation
 	//18=strlen("?service=")+strlen("&ticket=")+1
-	//11=strlen("&renew=true")
+	
 	int size = strlen( cas2_servicevalidate_baseurl ) + 
-		strlen("?service=") + strlen( escaped_service ) +
-		strlen("&ticket=") + strlen( ticket ) +
-		(escaped_pgt_url ? (strlen("&pgtUrl=")+strlen(escaped_pgt_url)) : 0) +
-		(renew ? 11 : 0);
+		9 + strlen( escaped_service ) + // 9 = strlen("?service=")
+		8 + strlen( ticket ) + 			// 8 = strlen("&ticket=")
+		(renew ? 11 : 0) +				// 11 = strlen("&renew=true")
+		(escaped_pgt_receive_url ? ( 8 + strlen(escaped_pgt_receive_url) ) : 0); // 8 = strlen("&pgtUrl=")
+		
 	
 	char* url;
 	if(url=calloc(size,sizeof( char ) )){
@@ -460,9 +469,9 @@ cas_cas2_servicevalidate_url(char* cas2_servicevalidate_baseurl, char* escaped_s
 		strcat( url,"&ticket=" );
 		strcat( url,ticket );
 		if(renew) strcat( url, "&renew=true");
-		if(escaped_pgt_url) {
+		if(escaped_pgt_receive_url) {
 			strcat(url, "&pgtUrl=");
-			strcat(url, escaped_pgt_url);
+			strcat(url, escaped_pgt_receive_url);
 		}
 	} 
 	return url;

@@ -51,6 +51,7 @@ cas_new() {
 		curl_easy_setopt(cas->curl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
 		curl_easy_setopt(cas->curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS|CURLPROTO_FILE);
 		
+#define DEBUG 1
 #ifdef DEBUG
 		curl_easy_setopt(cas->curl, CURLOPT_VERBOSE, 1L);
 #else

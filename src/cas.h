@@ -66,7 +66,8 @@ void cas_zap( CAS* cas );
  *  @return a CAS_CODE representing the status of the request.
  */
 CAS_CODE cas_cas1_validate( CAS* cas, char* cas1_validate_url, char* escaped_service, char* ticket, int renew);
-CAS_CODE cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_url, char* escaped_service, char* ticket, int renew, char* escaped_pgt_url);
+CAS_CODE cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew);
+CAS_CODE cas_cas2_servicevalidate_proxyticketing( CAS* cas, char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew, char* escaped_pgt_receive_url, char* escaped_pgt_retrieve_url);
 char* cas_cas2_servicevalidate_url( char* cas2_servicevalidate_url, char* escaped_service, char* ticket, int renew, char* escaped_pgt_url);
 
 char* cas_get_principal( CAS* cas );
@@ -75,6 +76,7 @@ char* cas_get_pgtiou( CAS* cas );
 
 #endif
 
+#define DEBUG 1
 #ifdef DEBUG
 #define cas_debug(format, args...) fprintf(stderr,"\n**********\n[%s(%d):%s]:\n" format "\n**********\n", __FILE__,__LINE__,__func__,## args)
 #else
