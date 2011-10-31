@@ -75,11 +75,13 @@ typedef struct {
 		XML_FAIL=-1,
 		XML_NEED_START_DOC=0,
 		XML_NEED_OPEN_SERVICERESPONSE,
-		XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE,
+		XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE_PROXYSUCCESS_PROXYFAILURE,
 		XML_NEED_OPEN_USER,
 		XML_READ_USER,
 		XML_NEED_OPEN_PROXYGRANTINGTICKET_CLOSE_AUTHENTICATIONSUCCESS,
 		XML_READ_PROXYGRANTINGTICKET,
+		XML_NEED_OPEN_PROXYTICKET_CLOSE_PROXYSUCCESS,
+		XML_READ_PROXYTICKET,
 		XML_NEED_CLOSE_USER,
 		XML_NEED_CLOSE_AUTHENTICATIONSUCCESS,
 		XML_READ_FAILUREMESSAGE,
@@ -129,8 +131,8 @@ static void
 cas_cas2_start_cas_serviceResponse( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
 	switch(ctx->xml_state){
 	case XML_NEED_OPEN_SERVICERESPONSE:
-		cas_debug( "XML_NEED_OPEN_SERVICERESPONSE->XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE" );
-		ctx->xml_state=XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE;
+		cas_debug( "XML_NEED_OPEN_SERVICERESPONSE->XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE_PROXYSUCCESS_PROXYFAILURE" );
+		ctx->xml_state=XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE_PROXYSUCCESS_PROXYFAILURE;
 		break;
 	default:
 		ctx->xml_state=XML_FAIL;
@@ -141,8 +143,8 @@ cas_cas2_start_cas_serviceResponse( CAS_XML_STATE* ctx, const xmlChar* localname
 static void
 cas_cas2_start_cas_authenticationSuccess( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
 	switch(ctx->xml_state){
-	case XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE:
-		cas_debug( "XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE->XML_NEED_OPEN_USER" );
+	case XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE_PROXYSUCCESS_PROXYFAILURE:
+		cas_debug( "XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE_PROXYSUCCESS_PROXYFAILURE->XML_NEED_OPEN_USER" );
 		ctx->xml_state=XML_NEED_OPEN_USER;
 		break;
 	default:
@@ -154,8 +156,8 @@ cas_cas2_start_cas_authenticationSuccess( CAS_XML_STATE* ctx, const xmlChar* loc
 static void
 cas_cas2_start_cas_authenticationFailure( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
 	switch(ctx->xml_state){
-	case XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE:
-		cas_debug( "XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE->XML_READ_FAILUREMESSAGE" );
+	case XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE_PROXYSUCCESS_PROXYFAILURE:
+		cas_debug( "XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE_PROXYSUCCESS_PROXYFAILURE->XML_READ_FAILUREMESSAGE" );
 		int valuesz=attributes[4]-attributes[3];
 		if(nb_attributes==1 && strncasecmp("code",attributes[0],4)==0){
 			if(valuesz==15 && strncasecmp(attributes[3],"INVALID_REQUEST",valuesz)==0){
@@ -166,6 +168,37 @@ cas_cas2_start_cas_authenticationFailure( CAS_XML_STATE* ctx, const xmlChar* loc
 				ctx->xml_state=XML_READ_FAILUREMESSAGE;
 			}else if(valuesz==15 && strncasecmp("INVALID_SERVICE",attributes[3],valuesz)==0){
 				ctx->cas->code=CAS2_INVALID_SERVICE;
+				ctx->xml_state=XML_READ_FAILUREMESSAGE;
+			}else if(valuesz==14 && strncasecmp("INTERNAL_ERROR",attributes[3],valuesz)==0){
+				ctx->cas->code=CAS2_INTERNAL_ERROR;
+				ctx->xml_state=XML_READ_FAILUREMESSAGE;
+			}else{
+				ctx->xml_state=XML_FAIL;
+			}
+			cas_debug("CODE=%d",ctx->cas->code);
+		}else{
+			ctx->xml_state=XML_FAIL;
+		}
+		
+		break;
+	default:
+		ctx->xml_state=XML_FAIL;
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
+	}
+}
+
+static void
+cas_cas2_start_cas_proxyFailure( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
+	switch(ctx->xml_state){
+	case XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE_PROXYSUCCESS_PROXYFAILURE:
+		cas_debug( "XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE_PROXYSUCCESS_PROXYFAILURE->XML_READ_FAILUREMESSAGE" );
+		int valuesz=attributes[4]-attributes[3];
+		if(nb_attributes==1 && strncasecmp("code",attributes[0],4)==0){
+			if(valuesz==15 && strncasecmp(attributes[3],"INVALID_REQUEST",valuesz)==0){
+				ctx->cas->code=CAS2_INVALID_REQUEST;
+				ctx->xml_state=XML_READ_FAILUREMESSAGE;
+			}else if(valuesz==7 && strncasecmp(attributes[3],"BAD_PGT",valuesz)==0){
+				ctx->cas->code=CAS2_BAD_PGT;
 				ctx->xml_state=XML_READ_FAILUREMESSAGE;
 			}else if(valuesz==14 && strncasecmp("INTERNAL_ERROR",attributes[3],valuesz)==0){
 				ctx->cas->code=CAS2_INTERNAL_ERROR;
@@ -204,6 +237,32 @@ cas_cas2_start_cas_proxyGrantingTicket( CAS_XML_STATE* ctx, const xmlChar* local
 	case XML_NEED_OPEN_PROXYGRANTINGTICKET_CLOSE_AUTHENTICATIONSUCCESS:
 		cas_debug( "XML_NEED_OPEN_PROXYGRANTINGTICKET->XML_READ_PROXYGRANTINGTICKET" );
 		ctx->xml_state=XML_READ_PROXYGRANTINGTICKET;
+		break;
+	default:
+		ctx->xml_state=XML_FAIL;
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
+	}
+}
+
+static void
+cas_cas2_start_cas_proxySuccess( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
+  switch(ctx->xml_state){
+	case XML_NEED_OPEN_PROXYGRANTINGTICKET_CLOSE_AUTHENTICATIONSUCCESS:
+		cas_debug( "XML_NEED_OPEN_PROXYGRANTINGTICKET_CLOSE_AUTHENTICATIONSUCCESS->XML_NEED_OPEN_PROXYTICKET_CLOSE_PROXYSUCCESS" );
+		ctx->xml_state=XML_NEED_OPEN_PROXYTICKET_CLOSE_PROXYSUCCESS;
+		break;
+	default:
+		ctx->xml_state=XML_FAIL;
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
+	}
+}
+
+static void
+cas_cas2_start_cas_proxyTicket( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
+  switch(ctx->xml_state){
+	case XML_NEED_OPEN_PROXYTICKET_CLOSE_PROXYSUCCESS:
+		cas_debug( "XML_NEED_OPEN_PROXYTICKET_CLOSE_PROXYSUCCESS->XML_READ_PROXYTICKET" );
+		ctx->xml_state=XML_READ_PROXYTICKET;
 		break;
 	default:
 		ctx->xml_state=XML_FAIL;
@@ -265,6 +324,33 @@ cas_cas2_end_cas_authenticationFailure( CAS_XML_STATE* ctx, const xmlChar* local
 }
 
 static void
+cas_cas2_end_cas_proxySuccess( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
+	switch(ctx->xml_state){
+	case XML_NEED_CLOSE_AUTHENTICATIONSUCCESS:
+	case XML_NEED_OPEN_PROXYGRANTINGTICKET_CLOSE_AUTHENTICATIONSUCCESS:
+		cas_debug( "%d->XML_NEED_CLOSE_SERVICERESPONSE", ctx->xml_state );
+		ctx->xml_state=XML_NEED_CLOSE_SERVICERESPONSE;
+		break;
+	default:
+		ctx->xml_state=XML_FAIL;
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
+	}
+}
+
+static void
+cas_cas2_end_cas_proxyFailure( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
+	switch(ctx->xml_state){
+	case XML_READ_FAILUREMESSAGE:
+		cas_debug( "XML_NEED_CLOSE_AUTHENTICATIONFAILURE->XML_NEED_CLOSE_SERVICERESPONSE" );
+		ctx->xml_state=XML_NEED_CLOSE_SERVICERESPONSE;
+		break;
+	default:
+		ctx->xml_state=XML_FAIL;
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
+	}
+}
+
+static void
 cas_cas2_end_cas_serviceResponse( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
 	switch( ctx->xml_state){
 	case XML_NEED_CLOSE_SERVICERESPONSE:
@@ -292,6 +378,12 @@ cas_cas2_startElementNs( CAS_XML_STATE* ctx, const xmlChar* localname, const xml
 			cas_cas2_start_cas_user( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
 		} else if ( strncasecmp( "proxyGrantingTicket",localname,19 )==0 ) {
 			cas_cas2_start_cas_proxyGrantingTicket( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
+		} else if ( strncasecmp( "proxySuccess",localname,12 )==0 ) {
+			cas_cas2_start_cas_proxySuccess( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
+		} else if ( strncasecmp( "proxyFailure",localname,12 )==0 ) {
+			cas_cas2_start_cas_proxyFailure( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
+		} else if ( strncasecmp( "proxyTicket",localname,11 )==0 ) {
+			cas_cas2_start_cas_proxyTicket( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
 		} else {
 			ctx->xml_state=XML_FAIL;
 			cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
@@ -313,6 +405,12 @@ cas_cas2_endElementNs( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlCh
 			cas_cas2_end_cas_user( ctx,localname,prefix,URI );
 		} else if ( strncasecmp( "proxyGrantingTicket",localname,19 )==0 ) {
 			cas_cas2_end_cas_proxyGrantingTicket( ctx,localname,prefix,URI );
+		} else if ( strncasecmp( "proxySuccess",localname,12 )==0 ) {
+			cas_cas2_end_cas_proxySuccess( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
+		} else if ( strncasecmp( "proxyFailure",localname,12 )==0 ) {
+			cas_cas2_end_cas_proxyFailure( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
+		} else if ( strncasecmp( "proxyTicket",localname,11 )==0 ) {
+			cas_cas2_end_cas_proxyTicket( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
 		} else {
 			ctx->xml_state=XML_FAIL;
 			cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
@@ -373,6 +471,22 @@ cas_cas2_characters( CAS_XML_STATE* ctx, const xmlChar* ch, int len ) {
 			strncat( ctx->cas->pgtiou,ch,len );
 		}
 		cas_debug("PGTIOU=%s",ctx->cas->pgtiou);
+	case XML_READ_PROXYTICKET:
+		if( !ctx->cas->proxyTicket ) {
+			ctx->cas->proxyTicket=calloc( len+1,sizeof( char ) );
+			if(ctx->cas->proxyTicket==NULL) return;
+			strncpy( ctx->cas->proxyTicket,ch,len );
+			ctx->cas->proxyTicket[len]='\0';
+		} else {
+			void* tmp=ctx->cas->proxyTicket;
+			ctx->cas->proxyTicket=realloc( ctx->cas->proxyTicket,strlen( ctx->cas->proxyTicket )+len+1 );
+			if(ctx->cas->proxyTicket==NULL){
+				free(tmp);
+				return;
+			}
+			strncat( ctx->cas->proxyTicket,ch,len );
+		}
+		cas_debug("PROXY TICKET=%s",ctx->cas->proxyTicket);
 	break;
 	default: //If unexpected characters are not whitespace, XML_FAIL
 		for( i=0; i<len; i++ ) {
