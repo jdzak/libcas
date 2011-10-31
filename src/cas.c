@@ -99,13 +99,15 @@ cas_zap( CAS* cas ) {
 		if( cas->curl ) curl_easy_cleanup( cas->curl );
 		if( cas->principal ) free( cas->principal );
 		if( cas->pgtiou ) free( cas->pgtiou );
-		if( cas->pgt ) free( cas-> pgt );
+		if( cas->pgt ) free( cas->pgt );
+		if( cas->proxy_ticket ) free( cas->proxy_ticket);
 		if( cas->message ) free( cas->message );
 		
 		cas->curl=NULL;
 		cas->principal=NULL;
 		cas->pgtiou=NULL;
 		cas->pgt=NULL;
+		cas->proxy_ticket = NULL;
 		cas->message=NULL;
 		
 		free( cas );
@@ -139,11 +141,19 @@ cas_get_pgtiou( CAS* cas ) {
 }
 
 /*******************************************************************************
- * cas_get_pgtiou: Retrieve a resolved pgtiou
+ * cas_get_pgt: Retrieve a resolved pgt
  */
 char*
 cas_get_pgt( CAS* cas ) {
 	return( cas->pgt );
+}
+
+/*******************************************************************************
+ * cas_get_proxy_ticket: Retrieve a proxy ticket
+ */
+char* 
+cas_get_proxy_ticket( CAS* cas) {
+	return( cas->proxy_ticket );
 }
 
 /*******************************************************************************

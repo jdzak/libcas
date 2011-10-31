@@ -17,7 +17,7 @@ struct CAS {
 	CAS_CODE code;
 	char* pgtiou;
 	char* pgt;
-	char* proxyTicket;
+	char* proxy_ticket;
 	union{
 		char* principal;
 		char* message;

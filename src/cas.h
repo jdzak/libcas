@@ -72,11 +72,14 @@ CAS_CODE cas_cas2_serviceValidate_proxyTicketing( CAS* cas, char* cas2_serviceva
 char* cas_cas2_serviceValidateUrl( char* cas2_servicevalidate_url, char* escaped_service, char* ticket, int renew, char* escaped_pgt_url);
 char* cas_cas2_retrievePgtUrl(char* url, char* pgtiou);
 char* cas_cas2_retrievePgt(char* url, CAS* cas);
+CAS_CODE cas_cas2_proxy( CAS* cas, char* cas2_proxy_baseurl, char* escaped_service, char* proxy_granting_ticket);
+char* cas_cas2_proxyUrl(char* base_url, char* escaped_service, char* proxy_granting_ticket );
 
 char* cas_get_principal( CAS* cas );
 char* cas_get_message( CAS* cas );
 char* cas_get_pgtiou( CAS* cas );
 char* cas_get_pgt( CAS* cas );
+char* cas_get_proxy_ticket( CAS* cas);
 
 #endif
 

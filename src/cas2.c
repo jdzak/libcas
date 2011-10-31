@@ -83,6 +83,7 @@ typedef struct {
 		XML_NEED_OPEN_PROXYTICKET_CLOSE_PROXYSUCCESS,
 		XML_READ_PROXYTICKET,
 		XML_NEED_CLOSE_USER,
+		XML_NEED_CLOSE_PROXYSUCCESS,
 		XML_NEED_CLOSE_AUTHENTICATIONSUCCESS,
 		XML_READ_FAILUREMESSAGE,
 		XML_NEED_CLOSE_SERVICERESPONSE,
@@ -247,8 +248,8 @@ cas_cas2_start_cas_proxyGrantingTicket( CAS_XML_STATE* ctx, const xmlChar* local
 static void
 cas_cas2_start_cas_proxySuccess( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix,const xmlChar* URI,int nb_namespaces,const xmlChar** namespaces,int nb_attributes,int nb_defaulted,const xmlChar** attributes ) {
   switch(ctx->xml_state){
-	case XML_NEED_OPEN_PROXYGRANTINGTICKET_CLOSE_AUTHENTICATIONSUCCESS:
-		cas_debug( "XML_NEED_OPEN_PROXYGRANTINGTICKET_CLOSE_AUTHENTICATIONSUCCESS->XML_NEED_OPEN_PROXYTICKET_CLOSE_PROXYSUCCESS" );
+	case XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE_PROXYSUCCESS_PROXYFAILURE:
+		cas_debug( "XML_NEED_OPEN_AUTHENTICATIONSUCCESS_AUTHENTICATIONFAILURE_PROXYSUCCESS_PROXYFAILURE->XML_NEED_OPEN_PROXYTICKET_CLOSE_PROXYSUCCESS" );
 		ctx->xml_state=XML_NEED_OPEN_PROXYTICKET_CLOSE_PROXYSUCCESS;
 		break;
 	default:
@@ -297,6 +298,19 @@ cas_cas2_end_cas_proxyGrantingTicket( CAS_XML_STATE* ctx, const xmlChar* localna
 }
 
 static void
+cas_cas2_end_cas_proxyTicket( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
+	switch(ctx->xml_state){
+	case XML_READ_PROXYTICKET:
+		cas_debug( "XML_READ_PROXYTICKET->XML_NEED_CLOSE_PROXYSUCCESS" );
+		ctx->xml_state=XML_NEED_CLOSE_PROXYSUCCESS;
+		break;
+	default:
+		ctx->xml_state=XML_FAIL;
+		cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
+	}
+}
+
+static void
 cas_cas2_end_cas_authenticationSuccess( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
 	switch(ctx->xml_state){
 	case XML_NEED_CLOSE_AUTHENTICATIONSUCCESS:
@@ -326,9 +340,8 @@ cas_cas2_end_cas_authenticationFailure( CAS_XML_STATE* ctx, const xmlChar* local
 static void
 cas_cas2_end_cas_proxySuccess( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlChar* prefix, const xmlChar* URI ) {
 	switch(ctx->xml_state){
-	case XML_NEED_CLOSE_AUTHENTICATIONSUCCESS:
-	case XML_NEED_OPEN_PROXYGRANTINGTICKET_CLOSE_AUTHENTICATIONSUCCESS:
-		cas_debug( "%d->XML_NEED_CLOSE_SERVICERESPONSE", ctx->xml_state );
+	case XML_NEED_CLOSE_PROXYSUCCESS:
+		cas_debug( "XML_NEED_CLOSE_PROXYSUCCESS->XML_NEED_CLOSE_SERVICERESPONSE");
 		ctx->xml_state=XML_NEED_CLOSE_SERVICERESPONSE;
 		break;
 	default:
@@ -406,11 +419,11 @@ cas_cas2_endElementNs( CAS_XML_STATE* ctx, const xmlChar* localname, const xmlCh
 		} else if ( strncasecmp( "proxyGrantingTicket",localname,19 )==0 ) {
 			cas_cas2_end_cas_proxyGrantingTicket( ctx,localname,prefix,URI );
 		} else if ( strncasecmp( "proxySuccess",localname,12 )==0 ) {
-			cas_cas2_end_cas_proxySuccess( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
+			cas_cas2_end_cas_proxySuccess( ctx,localname,prefix,URI );
 		} else if ( strncasecmp( "proxyFailure",localname,12 )==0 ) {
-			cas_cas2_end_cas_proxyFailure( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
+			cas_cas2_end_cas_proxyFailure( ctx,localname,prefix,URI );
 		} else if ( strncasecmp( "proxyTicket",localname,11 )==0 ) {
-			cas_cas2_end_cas_proxyTicket( ctx,localname,prefix,URI,nb_namespaces,namespaces,nb_attributes,nb_defaulted, attributes );
+			cas_cas2_end_cas_proxyTicket( ctx,localname,prefix,URI );
 		} else {
 			ctx->xml_state=XML_FAIL;
 			cas_debug( "XML_FAIL:(%d)",ctx->xml_state );
@@ -472,21 +485,27 @@ cas_cas2_characters( CAS_XML_STATE* ctx, const xmlChar* ch, int len ) {
 		}
 		cas_debug("PGTIOU=%s",ctx->cas->pgtiou);
 	case XML_READ_PROXYTICKET:
-		if( !ctx->cas->proxyTicket ) {
-			ctx->cas->proxyTicket=calloc( len+1,sizeof( char ) );
-			if(ctx->cas->proxyTicket==NULL) return;
-			strncpy( ctx->cas->proxyTicket,ch,len );
-			ctx->cas->proxyTicket[len]='\0';
+		cas_debug("PROXY TICKET (RAW)=%s",ch);
+		if( !ctx->cas->proxy_ticket ) {
+			ctx->cas->proxy_ticket=calloc( len+1,sizeof( char ) );
+			if(ctx->cas->proxy_ticket==NULL) return;
+			cas_debug("PROXY TICKET=%s",ch);
+			if ( strncasecmp( "PT-",ch,3 )==0 ) {
+				strncpy( ctx->cas->proxy_ticket,ch,len );
+				ctx->cas->proxy_ticket[len]='\0';
+			} 
 		} else {
-			void* tmp=ctx->cas->proxyTicket;
-			ctx->cas->proxyTicket=realloc( ctx->cas->proxyTicket,strlen( ctx->cas->proxyTicket )+len+1 );
-			if(ctx->cas->proxyTicket==NULL){
+			void* tmp=ctx->cas->proxy_ticket;
+			ctx->cas->proxy_ticket=realloc( ctx->cas->proxy_ticket,strlen( ctx->cas->proxy_ticket )+len+1 );
+			if(ctx->cas->proxy_ticket==NULL){
 				free(tmp);
 				return;
 			}
-			strncat( ctx->cas->proxyTicket,ch,len );
+			if ( strncasecmp( "PT-",ch,3 )==0 ) {
+				strncat( ctx->cas->proxy_ticket,ch,len );
+			}
 		}
-		cas_debug("PROXY TICKET=%s",ctx->cas->proxyTicket);
+		cas_debug("PROXY TICKET=%s",ctx->cas->proxy_ticket);
 	break;
 	default: //If unexpected characters are not whitespace, XML_FAIL
 		for( i=0; i<len; i++ ) {
@@ -524,6 +543,7 @@ cas_cas2_serviceValidate_proxyTicketing( CAS* cas, char* cas2_servicevalidate_ba
 	}
 	if(cas->principal) { free(cas->principal);cas->principal=NULL;}
 	if(cas->pgtiou) { free(cas->pgtiou);cas->pgtiou=NULL;}
+	if(cas->pgt) { free(cas->pgtiou);cas->pgt=NULL;}
 	
 	xmlSAXHandlerPtr sax=calloc( 1,sizeof( xmlSAXHandler ) );
 	if(sax==NULL) return(CAS_ENOMEM);
@@ -564,12 +584,11 @@ cas_cas2_serviceValidate_proxyTicketing( CAS* cas, char* cas2_servicevalidate_ba
 					if (pgt_retrieve_url != NULL) {
 						char* pgt = cas_cas2_retrievePgt(pgt_retrieve_url, cas);
 						cas_debug( "pgt:(%s)",pgt );
-						if (pgt != NULL) {
+						if (pgt != NULL && strncasecmp( "PGT-",pgt,4 )==0 ) {
 							cas->pgt = pgt;
 						} else {
 							return(CAS_INVALID_RESPONSE);
 						}
-						free(pgt);
 						free(pgt_retrieve_url);
 					}
 				}
@@ -617,7 +636,8 @@ cas_cas2_serviceValidateUrl(char* cas2_servicevalidate_baseurl, char* escaped_se
 	return url;
 }
 
-char* cas_cas2_retrievePgtUrl(char* baseUrl, char* pgtiou) {
+char* 
+cas_cas2_retrievePgtUrl(char* baseUrl, char* pgtiou) {
 	int size = strlen( baseUrl ) +
 		8 + strlen( pgtiou );	 // 8 = strlen("?pgtIou=")
 
@@ -630,7 +650,8 @@ char* cas_cas2_retrievePgtUrl(char* baseUrl, char* pgtiou) {
 	return url;
 }
 
-char* cas_cas2_retrievePgt(char* url, CAS* cas) {
+char* 
+cas_cas2_retrievePgt(char* url, CAS* cas) {
 	char* pgt;
 
 	curl_easy_setopt( cas->curl,CURLOPT_URL, url );
@@ -640,4 +661,82 @@ char* cas_cas2_retrievePgt(char* url, CAS* cas) {
 	curl_easy_perform( cas->curl );
 
 	return pgt;
+}
+
+
+/*******************************************************************************
+ * cas_cas2_proxy: Obtain a proxy ticket from the CAS2 server
+ */
+CAS_CODE
+cas_cas2_proxy( CAS* cas, char* cas2_proxy_baseurl, char* escaped_service, char* proxy_granting_ticket) {
+	cas_debug( "cas_cas2_proxy [proxy_granting_ticekt]: %s", proxy_granting_ticket );
+	if(!cas && cas2_proxy_baseurl && escaped_service && proxy_granting_ticket) {
+		return(CAS_INVALID_PARAMETERS);
+	}
+	if(cas->proxy_ticket) { free(cas->proxy_ticket);cas->proxy_ticket=NULL;}
+	
+	xmlSAXHandlerPtr sax=calloc( 1,sizeof( xmlSAXHandler ) );
+	if(sax==NULL) return(CAS_ENOMEM);
+	sax->initialized=XML_SAX2_MAGIC;
+
+	sax->startElementNs=( startElementNsSAX2Func )cas_cas2_startElementNs;
+	sax->endElementNs=( endElementNsSAX2Func )cas_cas2_endElementNs;
+	sax->characters=( charactersSAXFunc )cas_cas2_characters;
+	sax->startDocument=( startDocumentSAXFunc )cas_cas2_startDocument;
+	sax->endDocument=( endDocumentSAXFunc )cas_cas2_endDocument;
+	CAS_XML_STATE state= {cas,XML_NEED_START_DOC};
+
+	xmlParserCtxtPtr ctx=xmlCreatePushParserCtxt( sax, &state, NULL,0,NULL );
+	xmlCtxtUseOptions( ctx,XML_PARSE_NOBLANKS );
+
+	char* url = cas_cas2_proxyUrl(cas2_proxy_baseurl, escaped_service, proxy_granting_ticket);
+	if (url != NULL) {
+		//Setup curl connection
+		curl_easy_setopt( cas->curl,CURLOPT_URL, url );
+
+		//Set response handler
+		curl_easy_setopt( cas->curl,CURLOPT_WRITEFUNCTION, ( curl_write_callback )cas_cas2_curl_callback );
+
+		//Pass state to response handler
+		curl_easy_setopt( cas->curl,CURLOPT_WRITEDATA, ctx );
+		int curl_status=curl_easy_perform( cas->curl );
+
+		int xmlParseError = xmlParseChunk( ctx,NULL,0,1 );
+		
+		free(sax);
+		free(url);
+		xmlFreeParserCtxt(ctx);
+		if(curl_status==0){
+			if( state.xml_state==XML_COMPLETE ) {
+				return( cas->code );
+			}else if(xmlParseError){
+				return(CAS2_INVALID_XML);
+			}else{
+				return(CAS_INVALID_RESPONSE);
+			}
+		} else {
+			if(cas->message) { free(cas->message);}
+			cas->message=strdup(curl_easy_strerror(curl_status));
+			return(CAS_CURL_FAILURE);
+		}
+	}else{ //ENOMEM for url calloc
+		return(CAS_ENOMEM);
+	}
+}
+
+char* 
+cas_cas2_proxyUrl(char* base_url, char* escaped_service, char* proxy_granting_ticket ) {
+	int size = strlen( base_url ) +
+		15 + strlen( escaped_service ) +	 // 15 = strlen("?targetService=")
+		5 + strlen( proxy_granting_ticket ); // 5 = strlen("&pgt=")
+
+	char* url;
+	if (url=calloc(size,sizeof( char) )) {
+		strcpy( url, base_url);
+		strcat( url, "?targetService=");
+		strcat( url, escaped_service);
+		strcat( url, "&pgt=");
+		strcat( url, proxy_granting_ticket);
+	}
+	return url;
 }
