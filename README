@@ -60,3 +60,51 @@ Basic library usage is as follows:
 //-- Destroy libcas session
 	cas_destroy();
 
+
+Alternatively, if you would like to proxy authentication through another service usage is as follows:
+
+//-- Initialize new CAS handle the same as above
+	cas_init();											
+	CAS* cas=cas_new();
+	
+//-- (Required) Enable validation and set certificate is required when proxying authenticaiton
+	cas_set_ssl_validate_server(cas,1);					
+	cas_set_ssl_ca(cas,"/etc/ssl/certs");				
+	
+
+//-- CAS2 Validation Function
+//--   (CAS Handle,Validation URL,Escaped Service,Ticket,Renew Flag)
+	CAS_CODE code=cas_cas2_serviceValidate_proxyTicketing(				
+		cas,											
+		"http://localhost:12345/cas/serviceValidate",   
+		"http%3a%2f%2flocalhost%2f",					
+		cas_service_ticket,								
+		0),
+		"http%3a%2f%2fcallbackurl%2f/receive_pgt",
+		"http://callbackurl/retrieve_pgt";												
+
+//-- Check return code
+	if( code==CAS_VALIDATION_SUCCESS ) {
+
+//-- Get proxy granting ticket
+		char* pgt = cas_get_pgt( cas );
+		
+		if (pgt != NULL) {
+		
+//--  Obtain proxy ticket from server
+			code = cas_cas2_proxy( cas, "http://localhost:12345/proxy", ""http%3a%2f%2ftargetService%2f/resource"", pgt);
+			if ( code==CAS_PROXY_SUCCESS ) {
+				char* proxy_ticket = cas_get_proxy_ticket(cas);
+			}
+		}
+	} else {
+
+//-- Retrieve error message from response
+		char* m=cas_get_message(cas);
+	}
+
+//-- Destroy handle	
+	cas_zap( cas );
+
+//-- Destroy libcas session
+	cas_destroy();

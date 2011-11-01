@@ -538,6 +538,7 @@ cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_baseurl, char* es
  */
 CAS_CODE
 cas_cas2_serviceValidate_proxyTicketing( CAS* cas, char* cas2_servicevalidate_baseurl, char* escaped_service, char* ticket, int renew, char* escaped_pgt_receive_url, char* pgt_retrieve_baseurl) {
+	cas_debug("cas->code: %d", cas->code);
 	if(!cas && cas2_servicevalidate_baseurl && escaped_service && ticket) {
 		return(CAS_INVALID_PARAMETERS);
 	}
@@ -708,7 +709,7 @@ cas_cas2_proxy( CAS* cas, char* cas2_proxy_baseurl, char* escaped_service, char*
 		xmlFreeParserCtxt(ctx);
 		if(curl_status==0){
 			if( state.xml_state==XML_COMPLETE ) {
-				return( cas->code );
+				return(CAS2_PROXY_SUCCESS);
 			}else if(xmlParseError){
 				return(CAS2_INVALID_XML);
 			}else{

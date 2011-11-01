@@ -165,6 +165,8 @@ cas_code_str( CAS_CODE code ) {
 	switch( code ) {
 	case CAS_VALIDATION_SUCCESS:
 		return( "CAS: Validation Succeeded" );
+	case CAS2_PROXY_SUCCESS:
+	return( "CAS2: Proxy Ticket Obtained Successfully");
 	case CAS1_VALIDATION_NO:
 		return( "CAS1: Validation Failed" );
 	case CAS2_INVALID_REQUEST:

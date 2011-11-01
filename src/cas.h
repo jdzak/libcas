@@ -37,6 +37,7 @@ typedef struct CAS CAS;
 typedef enum {
 	CAS_FAIL=-1,				// - Utter Failure, reason unknown
 	CAS_VALIDATION_SUCCESS=0,	// - Successful validation, principal (and more?) retrieved
+	CAS2_PROXY_SUCCESS,		// - CAS2 Proxy ticket obtained successfully
 	CAS1_VALIDATION_NO,			// - CAS1 validation was successfully performed, but returned no principal
 	CAS2_INVALID_REQUEST,		// - CAS2 not all of the required request parameters were present
 	CAS2_INVALID_TICKET,		// - CAS2 the ticket provided was not valid, or the ticket did not come from an initial login and "renew" was set on validation. The body of the <cas:authenticationFailure> block of the XML response SHOULD describe the exact details.
