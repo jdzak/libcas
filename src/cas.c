@@ -51,7 +51,6 @@ cas_new() {
 		curl_easy_setopt(cas->curl, CURLOPT_REDIR_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
 		curl_easy_setopt(cas->curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS|CURLPROTO_FILE);
 		
-#define DEBUG 1
 #ifdef DEBUG
 		curl_easy_setopt(cas->curl, CURLOPT_VERBOSE, 1L);
 #else
@@ -102,6 +101,7 @@ cas_zap( CAS* cas ) {
 		if( cas->pgt ) free( cas->pgt );
 		if( cas->proxy_ticket ) free( cas->proxy_ticket);
 		if( cas->message ) free( cas->message );
+		if( cas->proxy_ticket ) free( cas->proxy_ticket );
 		
 		cas->curl=NULL;
 		cas->principal=NULL;
@@ -109,6 +109,7 @@ cas_zap( CAS* cas ) {
 		cas->pgt=NULL;
 		cas->proxy_ticket = NULL;
 		cas->message=NULL;
+		cas->proxy_ticket=NULL;
 		
 		free( cas );
 		

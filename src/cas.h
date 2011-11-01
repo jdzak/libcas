@@ -83,7 +83,6 @@ char* cas_get_proxy_ticket( CAS* cas);
 
 #endif
 
-#define DEBUG 1
 #ifdef DEBUG
 #define cas_debug(format, args...) fprintf(stderr,"\n**********\n[%s(%d):%s]:\n" format "\n**********\n", __FILE__,__LINE__,__func__,## args)
 #else
