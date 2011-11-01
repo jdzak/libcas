@@ -61,7 +61,7 @@ Basic library usage is as follows:
 	cas_destroy();
 
 
-Alternatively, if you would like to proxy authentication through another service usage is as follows:
+Alternatively, if you would like to proxy authentication to another service usage is as follows:
 
 //-- Initialize new CAS handle the same as above
 	cas_init();											
