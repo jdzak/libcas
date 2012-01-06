@@ -484,6 +484,7 @@ cas_cas2_characters( CAS_XML_STATE* ctx, const xmlChar* ch, int len ) {
 			strncat( ctx->cas->pgtiou,ch,len );
 		}
 		cas_debug("PGTIOU=%s",ctx->cas->pgtiou);
+	break;
 	case XML_READ_PROXYTICKET:
 		cas_debug("PROXY TICKET (RAW)=%s",ch);
 		if( !ctx->cas->proxy_ticket ) {
