@@ -586,7 +586,7 @@ cas_cas2_serviceValidate_proxyTicketing( CAS* cas, char* cas2_servicevalidate_ba
 					if (pgt_retrieve_url != NULL) {
 						char* pgt = cas_cas2_retrievePgt(pgt_retrieve_url, cas);
 						cas_debug( "pgt:(%s)",pgt );
-						if (pgt != NULL && strncasecmp( "PGT-",pgt,4 )==0 ) {
+						if (pgt != NULL && (strncasecmp( "PGT-",pgt,4 )==0 || strncasecmp( "TGT-",pgt,4 )==0) ) {
 							cas->pgt = pgt;
 						} else {
 							return(CAS_INVALID_RESPONSE);
