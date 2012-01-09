@@ -491,10 +491,8 @@ cas_cas2_characters( CAS_XML_STATE* ctx, const xmlChar* ch, int len ) {
 			ctx->cas->proxy_ticket=calloc( len+1,sizeof( char ) );
 			if(ctx->cas->proxy_ticket==NULL) return;
 			cas_debug("PROXY TICKET=%s",ch);
-			if ( strncasecmp( "PT-",ch,3 )==0 ) {
-				strncpy( ctx->cas->proxy_ticket,ch,len );
-				ctx->cas->proxy_ticket[len]='\0';
-			} 
+			strncpy( ctx->cas->proxy_ticket,ch,len );
+			ctx->cas->proxy_ticket[len]='\0';
 		} else {
 			void* tmp=ctx->cas->proxy_ticket;
 			ctx->cas->proxy_ticket=realloc( ctx->cas->proxy_ticket,strlen( ctx->cas->proxy_ticket )+len+1 );
@@ -502,9 +500,7 @@ cas_cas2_characters( CAS_XML_STATE* ctx, const xmlChar* ch, int len ) {
 				free(tmp);
 				return;
 			}
-			if ( strncasecmp( "PT-",ch,3 )==0 ) {
-				strncat( ctx->cas->proxy_ticket,ch,len );
-			}
+			strncat( ctx->cas->proxy_ticket,ch,len );
 		}
 		cas_debug("PROXY TICKET=%s",ctx->cas->proxy_ticket);
 	break;
@@ -671,7 +667,7 @@ cas_cas2_retrievePgt(char* url, CAS* cas) {
  */
 CAS_CODE
 cas_cas2_proxy( CAS* cas, char* cas2_proxy_baseurl, char* escaped_service, char* proxy_granting_ticket) {
-	cas_debug( "cas_cas2_proxy [proxy_granting_ticekt]: %s", proxy_granting_ticket );
+	cas_debug( "cas_cas2_proxy [proxy_granting_ticket]: %s", proxy_granting_ticket );
 	if(!cas && cas2_proxy_baseurl && escaped_service && proxy_granting_ticket) {
 		return(CAS_INVALID_PARAMETERS);
 	}
