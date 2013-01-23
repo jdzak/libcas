@@ -71,6 +71,9 @@ CAS_CODE cas_cas2_servicevalidate( CAS* cas, char* cas2_servicevalidate_url, cha
 char* cas_get_principal( CAS* cas );
 char* cas_get_message( CAS* cas );
 
+void cas_set_ssl_ca( CAS* cas, const char* capath );
+void cas_set_ssl_validate_server( CAS* cas, int verify);
+
 #endif
 
 #ifdef DEBUG
